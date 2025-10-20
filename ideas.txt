@@ -6,6 +6,7 @@ Notes on first release:
 - Make sure to initialize the program if there is no config file.
 - I think, for now, I will just name the database "submissions_db.db" no matter what the project name is.
 - Make sure to implement your own regex function in Python since standard PCRE is a bit different than Python's regex!!!
+- Default `regex all` behavior just returns list of students matching regex. `-v` can be used to show context.
 
 Commands for first release:
     help
@@ -50,6 +51,7 @@ Commands for first release:
 
 What to put in config.json:
 - Status 
+    - Why?
 - Mapping of column names to deliverable file names
 - Due date for assignment
 - Late due date for assignment [future]

@@ -2,6 +2,8 @@ import yaml
 import sqlite3
 import os
 import platform
+from datetime import datetime
+import json
 
 ymlloader = yaml.CSafeLoader
 
@@ -24,69 +26,89 @@ def detect_deliverables(submissions: dict) -> list[str]:
     # Select only the files whose occurrance proportion is >= 0.80
     all_cpp_submitted = {k: all_cpp_submitted[k] for k in all_cpp_submitted if (all_cpp_submitted[k] >= 0.80)}
 
-    return all_cpp_submitted.keys()
+    return list(all_cpp_submitted.keys())
 
 
+def initialize():
+    assignment_name = input("What is the name of this assignment?: ")
+    assignment_name = assignment_name.strip()
 
-def initialize(submissions: dict):
+    # Letting the user retry this one bc I could see this being a bit tricky.
+    due_date = None
+    while (due_date == None):
+        due_date_input = input("When is the assignment due? Enter date in the form YYYY-MM-DD HH:MM: ")
+        due_date_input = due_date_input.strip() + ":59"     # Add the last few seconds just in case that matters
+        try:
+            due_date = datetime.strptime(due_date_input, "%Y-%m-%d %H:%M:%S")
+        except:
+            print("Bad date input. Try again.")
+
+    # Begin the initialization process by loading submission_metadata.yml
+    submissions = None
+    print("Loading submission_metadata.yml, this could take a while...")
+    with open("../submission_metadata.yml", "r") as f:
+        submissions = yaml.load(f, Loader=ymlloader)
+    if (submissions == None):
+        print("ERROR: failed to load submission_metadata.yml. Shutting down.")
+        exit()
+
     # Return a list of detected deliverable file names, use it to generate column headers
     deliverable_fnames = detect_deliverables(submissions)
     deliverable_colnames = [d.lower().replace(".", "_") for d in deliverable_fnames]
     deliverable_cols = [d + " TEXT" for d in deliverable_colnames]
 
+    table_colnames = ["submission_id"] + deliverable_colnames + ["student_name", "uin", "email", "timestamp", "score"]
     table_columns = ["submission_id INTEGER PRIMARY KEY"] + deliverable_cols + ["student_name TEXT NOT NULL", "uin INTEGER NOT NULL", "email TEXT", "timestamp TEXT", "score REAL"]
 
     conn = sqlite3.connect("submissions_db.db")
+    curs = conn.cursor()
 
     # Create the submissions table
-    conn.execute('''DROP TABLE IF EXISTS submissions''')     # Drop old version, if it exists
-    conn.execute(f"CREATE TABLE IF NOT EXISTS submissions ({", ".join(table_columns)})")
+    curs.execute('''DROP TABLE IF EXISTS submissions''')     # Drop old version, if it exists
+    curs.execute(f"CREATE TABLE IF NOT EXISTS submissions ({", ".join(table_columns)})")
 
-    # Placehodler variables for reading files from submissions
-    functions_cpp = None
-    image_scaling_cpp = None
-
+    # Dictionary with empty string as placeholder
+    deliverables_dict = {cname: "" for cname in deliverable_colnames}
     # Add all submission metadata to database
-    i = 0
-    functions_cpp = ""
-    image_scaling_cpp = ""
+    sub_count = 0
     for s in submissions:
-        print(f"Uploading {i+1}/{len(submissions)} submssions to database. Current submission: {s}.")
+        print(f"Uploading {sub_count+1}/{len(submissions)} submssions to database. Current submission: {s}.")
         submission_id = int(s[s.index('_')+1:])
 
-        # Gather file contents for submission
-        # If file was unable to be read, just upload the default value (which is "") to database
-        if os.path.isfile(f"{s}/functions.cpp"):
-            with open(f"{s}/functions.cpp", "r") as f:
-                functions_cpp = f.read()
-        else:
-            print(f"Submission {submission_id} does not have functions.cpp!")
-
-        if os.path.isfile(f"{s}/image_scaling.cpp"):
-            with open(f"{s}/image_scaling.cpp", "r") as f:
-                image_scaling_cpp = f.read()
-        else:
-            print(f"Submission {submission_id} does not have image_scaling.cpp!")
+        # Try reading all deliverables, if they exist
+        # If they don't exist, they will just default to empty string
+        for j in range(len(deliverable_fnames)):
+            if (os.path.isfile(f"../{s}/{deliverable_fnames[j]}")):
+                with open(f"../{s}/{deliverable_fnames[j]}", "r") as f:
+                    deliverables_dict[deliverable_colnames[j]] = f.read()
+            else:
+                print(f">>> Submission {submission_id} does not have the file {deliverable_fnames[j]}. Skipping...")
 
         # Add stuff to db
-        conn.execute(f'''INSERT INTO submissions(submission_id, functions_cpp, image_scaling_cpp, student_name, uin, email, timestamp, score) VALUES (?,?,?,?,?,?,?,?)''',
-            (
-                submission_id,
-                functions_cpp,
-                image_scaling_cpp,
-                submissions[s][":submitters"][0][":name"],
-                submissions[s][":submitters"][0][":sid"],
-                submissions[s][":submitters"][0][":email"],
-                str(submissions[s][":created_at"]),
-                submissions[s][":score"]
-            )
-        )
+        inserted_values = (submission_id,) + tuple(deliverables_dict[cn] for cn in deliverable_colnames) + (submissions[s][":submitters"][0][":name"], submissions[s][":submitters"][0][":sid"], submissions[s][":submitters"][0][":email"], str(submissions[s][":created_at"]), submissions[s][":score"])
+        question_marks = ",".join(['?' for _ in range(len(inserted_values))])
+        curs.execute(f'''INSERT INTO submissions({", ".join(table_colnames)}) VALUES ({question_marks})''', inserted_values)
 
-        i += 1
+        sub_count += 1
 
 
-    # Commit changes
+    # Write relevant config info to config.json
+    try:
+        config_dict = {}
+        config_dict["assignment_name"] = assignment_name
+        config_dict["due_date"] = due_date.strftime("%Y-%m-%d %H:%M:%S")
+        config_dict["deliverables_column_file_mapping"] = {deliverable_colnames[i]: deliverable_fnames[i] for i in range(len(deliverable_colnames))}
+        config_dict["submission_count"] = sub_count     # Not necessary, but perhaps good to know
+        with open("config.json", "w") as fjson:
+            json.dump(config_dict, fjson, indent=4)
+    except:
+        print("ERROR: could not write config info to config.json. Shutting down.")
+        exit()
+
+    # Commit changes and close
     conn.commit()
-
+    curs.close()
+    conn.close()
+    
 
 
