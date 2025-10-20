@@ -1,0 +1,87 @@
+Ideas for making this a command line app
+--------------
+
+Notes on first release:
+- I need to make sure to auto-detect the delivarable files on `init`
+- Make sure to initialize the program if there is no config file.
+- I think, for now, I will just name the database "submissions_db.db" no matter what the project name is.
+- Make sure to implement your own regex function in Python since standard PCRE is a bit different than Python's regex!!!
+
+Commands for first release:
+    help
+        * Shows help screen.
+    help <command name>
+        * Shows help for a specific command.
+    regex all -v <pattern here>
+        * Returns a list of all people with submissions that match the pattern as well as the in-context match content.
+            * `-a` means that it searches all submissions
+        * Match could be highlighted with a color, whereas context could be left as white text.
+        * Prints ALL matching sections with their context.
+    regex all -v -f <pattern here>
+        * Same as above but only prints first match (with context)
+    regex all <pattern here>
+        * Only returns list of names of people whose submissions match the regex.
+    regex all -case <pattern here>
+        * Same as above but case sensitive.
+    regex uin XXXXXXXXX <pattern here>
+        * Returns ALL regex matches for one person's submission with context (-v not needed)
+    regex uin XXXXXXXXX -f <pattern here>
+        * Returns only the first regex match for the submission corresponding to UIN XXXXXXXXX.
+    print uin XXXXXXXXX
+        * Print all deliverable files that corresponld to a uin (I think there is only one saved submission per uin)
+        * NOTE: print with Pygments syntax highlighting!
+    sketchy deadlines -h=1.5
+        * Look for submissions that are sketchy because they were submitted only 1.5 hours (or less) before the deadline.
+        * For now, we will ignore late submissions (e.g. submitted -3 hours after deadline) because that's too complicated.
+    sketchy attempts 4
+        * Look for submissions that are sketchy because they got their final score after <= 4 attempts.
+    mkconfig
+        * Re-initialize the program according to what is in the config file.
+    reset
+        * Deletes the config file, database, and any other data files associated with this program.
+        * Idk why anyone would need this, but might be useful.
+    exit
+        * Exits the program.
+    quit
+        * Also exits the program.
+    
+
+
+
+What to put in config.json:
+- Status 
+- Mapping of column names to deliverable file names
+- Due date for assignment
+- Late due date for assignment [future]
+- Name of assignment
+    - Get this from user input on init.
+
+
+Future improvements:
+- Filter by student name
+- `sketchy all` command
+- Add an option for a --late deadline in `sketchy deadlines`
+- Put late deadline in config.json
+
+
+
+
+
+Logo:
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⣠⣴⣾⣿⣿⣷⣶⣤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⢀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⣸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠾⠿⠿⠟⠛⠛⠛⠛⠛⣛⣛⣛⣛⣛⡛⠛⠛⠛⠂⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠰⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⠀⠀⠀⠀⠀⢀⣤⣤⡀⠀⠀
+⠀⠀⠀⠀⢀⣴⡄⠙⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡄⠀⠀⠀⢀⣾⠋⡈⢿⡄⠀
+⠀⠀⢠⣾⣿⣿⣿⣦⡀⠻⢿⣿⣿⣿⣿⣿⣿⠛⠛⠃⠀⠀⠀⣼⡇ ⠀⢸⡇⠀
+⠀⣠⣤⣤⣌⣉⠙⠻⢿⣦⣄⠙⠻⠿⣿⡿⠃⠰⣦⠀⠀⠀⠀⣿⡄⠀⠀⣼⠇⠀
+⠀⣿⣿⣿⣿⣿⣿⣶⣤⣈⠛⢿⣶⣄⠀⠀⠀⠀⢸⠇⠀⠀⠀⠸⣧⣀⣰⠏⠀⠀
+⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣦⡈⠛⢷⠀⠀⠀⣾⠀⠀⠀⠀⠀⢸⡿⠁⠀⠀⠀
+⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣄⠀⠀⢸⣿⣿⣷⣦⠀⠀⢸⡇⠀⠀⠀⠀
+⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⠀⠘⠿⣿⠿⠋⠀⠀⣸⡇⠀⠀⠀⠀
+⠀⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠀⠀⠀⠀⠀⠀⠀⠀⠛⠁⠀⠀⠀⠀
+⠀⣿⣿⣿⣿⣿⠀Gradescope⠀Sleuth⠀⣿⣿⣿⣿⣿⣿
+⠀⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛
