@@ -6,7 +6,8 @@ from datetime import datetime
 import json
 import re
 import functools
-from .argument_parsing import ArgumentParser
+from .argument_parsing import ArgumentParser, ParsedArguments
+from tabulate import tabulate
 
 # Added LRU cache for speed
 @functools.lru_cache(maxsize=256)
@@ -33,12 +34,13 @@ def py_regexp_csensitive(pattern, value):
         return 0
 
 
-def regex_all(deliverable_colnames, argparser: ArgumentParser):
-    case_sensitive = argparser.get_argument('-csens')
-    verbose = argparser.get_argument('-v')
-    first_only = argparser.get_argument('-f')
+def regex_all(deliverable_colnames: str, parsed_args: ParsedArguments):
+    case_sensitive = parsed_args.get_argument('-csens')
+    verbose = parsed_args.get_argument('-v')
+    first_only = parsed_args.get_argument('-f')
+    pattern = parsed_args.get_remainder()
 
-    # Sanity check the parsed arguments
+    # Make sure arguments make actual sense
     if (first_only and (not verbose)):
         raise ValueError("Bad args -- \'-f\' requires \'-v\'.")
 
@@ -56,13 +58,10 @@ def regex_all(deliverable_colnames, argparser: ArgumentParser):
     conditions = [f"{d} REGEXP ?" for d in deliverable_colnames]
     condition_string = " OR ".join(conditions)
     pattern_tuple = tuple(pattern for _ in range(len(conditions)))
-    if verbose:
-        print("Verbose not working yet. Try again later.")
-    else:
+    if (not verbose):
         # Print all student submissions matching pattern
-        curs.execute(f"SELECT (student_name, uin, email) FROM submissions WHERE {condition_string}", pattern_tuple)
+        curs.execute(f"SELECT student_name, uin, email FROM submissions WHERE {condition_string}", pattern_tuple)
         row_matches = curs.fetchall()
-        for rm in row_matches:
-            print(rm[0], rm[1], rm[2])
+        print(tabulate([("Name", "UIN", "E-Mail")] + row_matches, headers="firstrow", tablefmt="psql"))
 
 

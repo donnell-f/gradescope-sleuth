@@ -38,45 +38,48 @@ def main():
         exit()
     assn_name = config_dict['assignment_name']
 
+    # # Make parsers
+    # `regex all` parser
+    regex_all_argparser = ArgumentParser("regex all")
+    regex_all_argparser.add_argument('-csens', 0)
+    regex_all_argparser.add_argument('-v', 0)
+    regex_all_argparser.add_argument('-f', 0)
 
     # Run the main loop to prompt user
     while (True):
-        raw_input = input(f"({assn_name}) => ")
+        raw_input = input(f"(\x1b[36m{assn_name}\x1b[0m) => ")
         raw_input = raw_input.strip()     # NOTE: is this ok?
 
-        try:
-            # Handle blank input
-            if (raw_input == ""):
-                continue
-
-            # Handle `regex all` command
-            if (is_command(raw_input, "regex all")):
-                rall_argparser = ArgumentParser("regex all")
-                rall_argparser.add_argument('-csens', 0)
-                rall_argparser.add_argument('-f', 0)
-                regex_all(raw_input, list(config_dict['deliverables_column_file_mapping'].keys()))
-
-            # Handle `reset` command
-            if (raw_input == "reset"):
-                confirm_reset = input("Really reset database? (yes/no): ")
-                if (confirm_reset.lower() != "yes"):
-                    print("Reset interrupted by used. Nothing was changed.")
-                    continue
-                else:
-                    os.remove("config.json")
-                    print("Reset complete. Reopen the app for changes to take effect.")
-                    break     # Note: break or exit()?
-
-            # Handle `quit` and `exit` commands
-            if (raw_input == "quit" or raw_input == "exit"):
-                break
-
-            # If no match, just echo command input
-            print(raw_input)
-
-        except Exception as e:
-            print(f"ERROR: {e}")
+        # # try:
+        # Handle blank input
+        if (raw_input == ""):
             continue
+
+        # Handle `regex all` command
+        if (is_command(raw_input, "regex all")):
+            regex_all(list(config_dict['deliverables_column_file_mapping'].keys()),
+                        regex_all_argparser.parse_args(raw_input))
+            continue
+
+        # Handle `reset` command
+        if (raw_input == "reset"):
+            confirm_reset = input("Really reset database? (yes/no): ")
+            if (confirm_reset.lower() != "yes"):
+                print("Reset interrupted by used. Nothing was changed.")
+                continue
+            else:
+                os.remove("config.json")
+                print("Reset complete. Reopen the app for changes to take effect.")
+                break     # Note: break or exit()?
+
+        # Handle `quit` and `exit` commands
+        if (raw_input == "quit" or raw_input == "exit"):
+            break
+
+
+        # # except Exception as e:
+        # #     print(f"ERROR: {e}")
+        # #     continue
 
 
 
