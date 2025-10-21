@@ -57,7 +57,7 @@ def main():
 
         # Handle `regex all` command
         if (is_command(raw_input, "regex all")):
-            regex_all(list(config_dict['deliverables_column_file_mapping'].keys()),
+            regex_all(config_dict['deliverables_column_file_mapping'],
                         regex_all_argparser.parse_args(raw_input))
             continue
 

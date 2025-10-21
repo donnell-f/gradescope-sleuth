@@ -1,6 +1,9 @@
 Ideas for making this a command line app
 --------------
 
+Future improvements:
+- Make context radius a `regex` argument
+
 Notes on first release:
 - I need to make sure to auto-detect the delivarable files on `init`
 - Make sure to initialize the program if there is no config file.

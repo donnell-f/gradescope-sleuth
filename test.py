@@ -15,11 +15,6 @@ class IndexLineMapper:
         lexer = CppLexer(stripnl=False)
         formatter = TerminalFormatter(style='default')
         pretty_file = highlight(file, lexer, formatter)
-        print('-----------------------')
-        print(file)
-        print('-----------------------')
-        print(pretty_file)
-        print('-----------------------')
 
         if (file.strip() == ""):
             return
@@ -103,8 +98,40 @@ class IndexLineMapper:
         len_max_line_num = len(str(self.max_line_num))
         return f"{str(self.pretty_lines[index][1]).ljust(len_max_line_num)} │ {self.pretty_lines[index][0]}"
     
-    def getPrettyLineWithContext(self, line_number, context_radius=1):
+    def getPrettyLineWithContext(self, line_number: int, context_radius=1):
+        # Validity check
+        if (line_number < 1 or line_number > self.max_line_num):
+            raise ValueError("Invalid line number.")
         
+        # Put together the lines
+        index = line_number - 1
+        output_line_indices = range(max(0, index - context_radius), min(index + context_radius + 1, len(self.pretty_lines)))
+        output_lines = [self.getPrettyLine(oli + 1) for oli in output_line_indices]
+        return "\n".join(output_lines)
+
+    def getPrettyLinesWithContext(self, line_numbers: list[int], context_radius=1):
+        if (len(line_numbers) == 1):
+            return self.getPrettyLineWithContext(line_numbers[0], context_radius)
+
+        # Validity check
+        max_gap = 0
+        increasing = True
+        for i in range(len(line_numbers) - 1):
+            increasing = increasing and (line_numbers[i+1] - line_numbers[i] > 0)
+            max_gap = max(max_gap, abs(line_numbers[i+1] - line_numbers[i]))
+
+        if (max_gap != 1 or increasing == False or line_numbers[0] < 1 or line_numbers[-1] > self.max_line_num):
+            raise ValueError("Line numbers array is invalid.")
+        
+        # Put together the lines
+        istart = line_numbers[0] - 1 - context_radius
+        iend = line_numbers[-1] - 1 + context_radius
+        output_line_indices = range(max(0, istart), min(iend + context_radius + 1, len(self.pretty_lines)))
+        output_lines = [self.getPrettyLine(oli + 1) for oli in output_line_indices]
+        return "\n".join(output_lines)
+        
+    def getMaxLineNum(self):
+        return self.max_line_num
     
     def printAll(self):
         for ln in range(1, len(self.lines) + 1):
@@ -112,26 +139,40 @@ class IndexLineMapper:
     
 
 
-def in_context_matches(pattern: str, file: str):
+def in_context_matches(pattern: str, file: str, file_name: str):
+    MAGENTA = "\033[35m"
+    RESET = "\033[0m"
+    UNDERLINE_START = "\033[4m"
+    UNDERLINE_END = "\033[0m"
+
     ilm = IndexLineMapper(file)
+    student_info = "John Smith 999999999 john_smith@tamu.edu"
+    matches_header = f"{UNDERLINE_START}{student_info}{UNDERLINE_END}  -  {UNDERLINE_START}{file_name}{UNDERLINE_END}"
+    line_ext_length = len(matches_header) + len(str(ilm.getMaxLineNum())) + 3 - len(f"{UNDERLINE_START}{UNDERLINE_END}{UNDERLINE_START}{UNDERLINE_END}")
 
+    # Print student info header
+    print(len(str(ilm.getMaxLineNum()))*'─' + "─┬─" + line_ext_length*'─')
+    print(len(str(ilm.getMaxLineNum()))*' ' + ' │ ' + matches_header)
+    print(len(str(ilm.getMaxLineNum()))*'─' + "─┼─" + line_ext_length*'─')
+
+    # Save all matches with context to matches_with_context
     matches = re.finditer(pattern, file)
+    matches_with_context = []
     for m in matches:
-        print(m.start(), m.end())
         firstline = ilm.stringIndexToLineNum(m.start())
-        print(firstline)
         lastline = ilm.stringIndexToLineNum(m.end() - 1)
-        print(lastline)
-        all_lines = [ilm.getPrettyLine(lnum) for lnum in range(firstline, lastline + 1)]
-        # print(all_lines)
-        print("\n".join(all_lines))
-        print()
+        all_line_nums = [lnum for lnum in range(firstline, lastline + 1)]
+        matches_with_context.append(ilm.getPrettyLinesWithContext(all_line_nums))
+    
+    # Print the matches stored with matches_with_context
+    print(('\n' + len(str(ilm.getMaxLineNum()))*'─' + "─┼─" + line_ext_length*'─' + "\n").join(matches_with_context))
+
+    print(len(str(ilm.getMaxLineNum()))*'─' + "─┴─" + line_ext_length*'─')
+            
 
 
 
-
-cpp_code = """
-#include <iostream>
+cpp_code = """#include <iostream>
 #include <sstream>
 #include <fstream>
 #include <cmath>
@@ -185,5 +226,5 @@ int main() {
 # ilm.printAll()
 
 
-in_context_matches(r"try", cpp_code)
+in_context_matches(r"\}", cpp_code, "functions.cpp")
 

@@ -37,7 +37,10 @@ def py_regexp_csensitive(pattern, value):
         return 0
 
 
-def regex_all(deliverable_colnames: str, parsed_args: ParsedArguments):
+def regex_all(deliverables: dict[str,str], parsed_args: ParsedArguments):
+    deliv_cols = list(deliverables.keys())
+    deliv_files = [deliverables[dc] for dc in deliv_cols]
+
     case_sensitive = parsed_args.get_argument('-csens')
     verbose = parsed_args.get_argument('-v')
     first_only = parsed_args.get_argument('-f')
@@ -57,7 +60,7 @@ def regex_all(deliverable_colnames: str, parsed_args: ParsedArguments):
     
     curs = conn.cursor()
     
-    conditions = [f"{d} REGEXP ?" for d in deliverable_colnames]
+    conditions = [f"{d} REGEXP ?" for d in deliv_cols]
     condition_string = " OR ".join(conditions)
     pattern_tuple = tuple(pattern for _ in range(len(conditions)))
 
@@ -71,8 +74,8 @@ def regex_all(deliverable_colnames: str, parsed_args: ParsedArguments):
         curs.execute(f"SELECT * FROM submissions WHERE {condition_string}", pattern_tuple)
         row_matches = curs.fetchall()
         for rm in row_matches:
-            in_context_matches(pattern, rm[1])
-            in_context_matches(pattern, rm[2])
+            for k in range(len(deliv_cols)):
+                in_context_matches(pattern, rm[1 + k], deliv_files[k])
         return
 
 
