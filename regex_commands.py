@@ -6,8 +6,11 @@ from datetime import datetime
 import json
 import re
 import functools
-from .argument_parsing import ArgumentParser, ParsedArguments
 from tabulate import tabulate
+
+from .argument_parsing import ArgumentParser, ParsedArguments
+from .regex_backend import in_context_matches
+
 
 # Added LRU cache for speed
 @functools.lru_cache(maxsize=256)
@@ -54,14 +57,24 @@ def regex_all(deliverable_colnames: str, parsed_args: ParsedArguments):
     
     curs = conn.cursor()
     
-    row_matches = None
     conditions = [f"{d} REGEXP ?" for d in deliverable_colnames]
     condition_string = " OR ".join(conditions)
     pattern_tuple = tuple(pattern for _ in range(len(conditions)))
+
     if (not verbose):
-        # Print all student submissions matching pattern
+        # Print all student submissions matching pattern and then return
         curs.execute(f"SELECT student_name, uin, email FROM submissions WHERE {condition_string}", pattern_tuple)
+        print(tabulate([("Name", "UIN", "E-Mail")] + curs.fetchall(), headers="firstrow", tablefmt="psql"))
+        return
+
+    if (verbose):
+        curs.execute(f"SELECT * FROM submissions WHERE {condition_string}", pattern_tuple)
         row_matches = curs.fetchall()
-        print(tabulate([("Name", "UIN", "E-Mail")] + row_matches, headers="firstrow", tablefmt="psql"))
+        for rm in row_matches:
+            in_context_matches(pattern, rm[1])
+            in_context_matches(pattern, rm[2])
+        return
+
+
 
 
