@@ -2,7 +2,7 @@ import yaml
 import sqlite3
 import os
 import platform
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 
 ymlloader = yaml.CSafeLoader
@@ -34,14 +34,45 @@ def initialize():
     assignment_name = assignment_name.strip()
 
     # Letting the user retry this one bc I could see this being a bit tricky.
+    # Get on-time due date
     due_date = None
     while (due_date == None):
-        due_date_input = input("When is the assignment due? Enter date in the form YYYY-MM-DD HH:MM: ")
-        due_date_input = due_date_input.strip() + ":59"     # Add the last few seconds just in case that matters
+        due_date_input = input("When is the assignment due? Enter due date in 24-hour time (YYYY-MM-DD HH:MM): ")
+        due_date_input = due_date_input.strip() + ":59"     # Add the last few seconds for completeness
         try:
             due_date = datetime.strptime(due_date_input, "%Y-%m-%d %H:%M:%S")
         except:
             print("Bad date input. Try again.")
+    
+    # Get late due date
+    late_due_date = None
+    while (late_due_date == None):
+        print("What is the late due date for the assignment?")
+        print("- If late submissions are not allowed, leave this blank.")
+        print("- If late submissions are allowed, enter date in one of these formats:")
+        print("    - \"+<days> days\", meaning <days> days after the deadline.")
+        print("    - \"YYYY-MM-DD HH:MM\", meaning 24-hour timestamp.")
+        late_date_input = input("Late due date: ")
+        late_date_input = late_date_input.strip()
+
+        # If no late due date
+        if (late_date_input == ""):
+            late_due_date = due_date
+            break
+
+        # If days delta
+        elif (late_date_input[0] == "+"):
+            days_delta = int(late_date_input.split(' ')[0][1:])
+            late_due_date = due_date + timedelta(days=days_delta)
+            break
+
+        # If 24-hour timestamp
+        else:
+            late_date_input = late_date_input + ":59"     # Add the last few seconds for completeness
+            try:
+                late_due_date = datetime.strptime(late_date_input, "%Y-%m-%d %H:%M:%S")
+            except:
+                print("Bad date input. Try again.")
 
     # Begin the initialization process by loading submission_metadata.yml
     submissions = None
@@ -57,8 +88,8 @@ def initialize():
     deliverable_colnames = [d.lower().replace(".", "_") for d in deliverable_fnames]
     deliverable_cols = [d + " TEXT" for d in deliverable_colnames]
 
-    table_colnames = ["submission_id"] + deliverable_colnames + ["student_name", "uin", "email", "last_timestamp", "first_timestamp", "final_score", "attempt_count"]
-    table_columns = ["submission_id INTEGER PRIMARY KEY"] + deliverable_cols + ["student_name TEXT NOT NULL", "uin INTEGER NOT NULL", "email TEXT", "last_timestamp TEXT", "first_timestamp TEXT", "final_score REAL", "attempt_count INTEGER"]
+    table_colnames = ["submission_id"] + deliverable_colnames + ["student_name", "uin", "email", "first_timestamp", "last_timestamp", "final_score", "attempt_count"]
+    table_columns = ["submission_id INTEGER PRIMARY KEY"] + deliverable_cols + ["student_name TEXT NOT NULL", "uin INTEGER NOT NULL", "email TEXT", "first_timestamp TEXT", "last_timestamp TEXT", "final_score REAL", "attempt_count INTEGER"]
 
     conn = sqlite3.connect("submissions_db.db")
     curs = conn.cursor()
@@ -89,7 +120,7 @@ def initialize():
         first_timestamp = None
         attempt_count = len(submissions[s][":history"]) + 1    # Last attempt is not included in :history
         if (attempt_count > 1):
-            first_timestamp = submissions[s][":history"][-1][":created_at"].strftime("%Y-%m-%d %H:%M:%S")
+            first_timestamp = submissions[s][":history"][0][":created_at"].strftime("%Y-%m-%d %H:%M:%S")
         else:
             first_timestamp = last_timestamp
 
@@ -98,8 +129,8 @@ def initialize():
                         (submissions[s][":submitters"][0][":name"],
                          submissions[s][":submitters"][0][":sid"],
                          submissions[s][":submitters"][0][":email"],
-                         last_timestamp,
                          first_timestamp,
+                         last_timestamp,
                          submissions[s][":score"],
                          attempt_count)
         question_marks = ",".join(['?' for _ in range(len(inserted_values))])
@@ -113,6 +144,7 @@ def initialize():
         config_dict = {}
         config_dict["assignment_name"] = assignment_name
         config_dict["due_date"] = due_date.strftime("%Y-%m-%d %H:%M:%S")
+        config_dict["late_due_date"] = late_due_date.strftime("%Y-%m-%d %H:%M:%S")
         config_dict["deliverables_column_file_mapping"] = {deliverable_colnames[i]: deliverable_fnames[i] for i in range(len(deliverable_colnames))}
         config_dict["submissions_count_total"] = total_submissions_count     # Not necessary, but perhaps good to know
         with open("config.json", "w") as fjson:

@@ -5,10 +5,14 @@ def is_command(raw_input: str, cmd: str):
 
 
 class ParsedArguments:
-    parsed_args_dict = None
-    cmd_name = None
+    # Instance variables
+        # parsed_args_dict
+        # cmd_name
 
     def __init__(self, cmd_name, parsed_args_dict):
+        # Init instance variables
+        self.parsed_args_dict = None
+        self.cmd_name = None
         self.parsed_args_dict = parsed_args_dict
         self.cmd_name = cmd_name
 
@@ -31,10 +35,15 @@ class ParsedArguments:
 
 
 class ArgumentParser:
-    arguments = {}
-    cmd_name = None
+    # Instance variables
+        # arguments
+        # cmd_name
 
     def __init__(self, cmd_name):
+        # Init instance variables
+        self.arguments = {}
+        self.cmd_name = None
+
         self.cmd_name = cmd_name
 
     # @param arg: e.g. '-f', '-csens', '-v'
@@ -56,6 +65,14 @@ class ArgumentParser:
     def parse_args(self, raw_cmd_input) -> dict:
         output_args = {}
         cmd_split = raw_cmd_input.split(' ')
+
+        # Make sure there are no unknown args in command
+        args_set = set(self.arguments.keys())
+        for cspl in cmd_split:
+            if (len(cspl) >= 1):
+                if (cspl[0] == "-" and cspl[-1].isalpha()):
+                    if (cspl not in args_set):
+                        raise ValueError(f"Invalid argument: {cspl}")
 
         # Keeps track of which parts of the command have been "used" or "consumed". Helpful for finding __remainder__.
         args_consumption_map = [False for _ in range(len(cmd_split))]    

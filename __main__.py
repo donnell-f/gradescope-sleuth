@@ -62,7 +62,12 @@ def main():
     # `sketchy timestamps` parser
     sketchy_timestamps_parser = ArgumentParser("sketchy timestamps")
     sketchy_timestamps_parser.add_argument("-h", 1)
-
+    sketchy_timestamps_parser.add_argument("-late", 0)
+    # `sketchy attempts` parser
+    sketchy_attempts_parser = ArgumentParser("sketchy attempts")
+    sketchy_attempts_parser.add_argument('-natt', 1)
+    sketchy_attempts_parser.add_argument('-minsc', 1)
+    sketchy_attempts_parser.add_argument('-nolate', 0)
 
     # Create command history file if not exists
     if (not os.path.isfile("./command_history.log")):
@@ -115,10 +120,24 @@ def main():
         
         # Handle `sketchy timestamps` command
         elif (is_command(raw_input, "sketchy timestamps")):
+            # try:
+            sketchy_timestamps(
+                config_dict['due_date'],
+                config_dict['late_due_date'],
+                sketchy_timestamps_parser.parse_args(raw_input)
+            )
+            # except ValueError as e:
+            #     # Catches no hour input error
+            #     print(f"ERROR: {e}")
+            #     print("Try again.")
+            # continue
+
+        # Handle `sketchy attempts` command
+        elif (is_command(raw_input, "sketchy attempts")):
             try:
-                sketchy_timestamps(
-                    sketchy_timestamps_parser.parse_args(raw_input),
-                    config_dict['due_date']
+                sketchy_attempts(
+                    config_dict['due_date'],
+                    sketchy_attempts_parser.parse_args(raw_input)
                 )
             except ValueError as e:
                 # Catches no hour input error

@@ -7,11 +7,17 @@ from pygments import highlight
 
 
 class IndexLineMapper:
-    lines =  []
-    pretty_lines = []
-    max_line_num = -1
+    # Instance variables
+        # lines
+        # pretty_lines
+        # max_line_num
 
     def __init__(self, file: str):
+        # Init instance variables
+        self.lines =  []
+        self.pretty_lines = []
+        self.max_line_num = -1
+
         lexer = CppLexer(stripnl=False)
         formatter = TerminalFormatter(style='default')
         pretty_file = highlight(file, lexer, formatter)
