@@ -3,11 +3,16 @@ import sqlite3
 import os
 import platform
 import json
+from prompt_toolkit import PromptSession
+from prompt_toolkit.history import FileHistory
+from prompt_toolkit.formatted_text import ANSI
 
 from .initialize import initialize
 from .regex_commands import regex_all
 from .argument_parsing import ArgumentParser, is_command
 
+CYAN = '\033[36m'
+RESET = '\033[0m'
 
 def main():
     # Change into gradescope_sleuth folder since we will be running this as a module
@@ -41,15 +46,33 @@ def main():
     # # Make parsers
     # `regex all` parser
     regex_all_argparser = ArgumentParser("regex all")
-    regex_all_argparser.add_argument('-csens', 0)
+    regex_all_argparser.add_argument('-case', 0)
     regex_all_argparser.add_argument('-v', 0)
     regex_all_argparser.add_argument('-f', 0)
     regex_all_argparser.add_argument('-outf', 1)
 
-    # Run the main loop to prompt user
+    # Create command history file if not exists
+    if (not os.path.isfile("./command_history.log")):
+        with open("./command_history.log", "a") as histf:
+            pass
+
+    # Create the prompt session
+    session = PromptSession(history=FileHistory("command_history.log"))
+
     while (True):
-        raw_input = input(f"(\x1b[36m{assn_name}\x1b[0m) => ")
-        raw_input = raw_input.strip()     # NOTE: is this ok?
+        raw_input = None
+        try:
+            # Provide the prompt text here so prompt_toolkit renders it correctly.
+            raw_input = session.prompt(ANSI(f"({CYAN}{assn_name}{RESET}) => "))
+            raw_input = raw_input.strip()
+        except EOFError as e:
+            print(f"ERROR: {e}")
+            break
+        except KeyboardInterrupt as e:
+            break
+        
+        # raw_input = input(f"(\x1b[36m{assn_name}\x1b[0m) => ")
+        # raw_input = raw_input.strip()     # NOTE: is this ok?
 
         # # try:
         # Handle blank input
@@ -57,13 +80,13 @@ def main():
             continue
 
         # Handle `regex all` command
-        if (is_command(raw_input, "regex all")):
+        elif (is_command(raw_input, "regex all")):
             regex_all(config_dict['deliverables_column_file_mapping'],
                         regex_all_argparser.parse_args(raw_input))
             continue
 
         # Handle `reset` command
-        if (raw_input == "reset"):
+        elif (raw_input == "reset"):
             confirm_reset = input("Really reset database? (yes/no): ")
             if (confirm_reset.lower() != "yes"):
                 print("Reset interrupted by used. Nothing was changed.")
@@ -74,9 +97,11 @@ def main():
                 break     # Note: break or exit()?
 
         # Handle `quit` and `exit` commands
-        if (raw_input == "quit" or raw_input == "exit"):
+        elif (raw_input == "quit" or raw_input == "exit" or raw_input == "q"):
             break
 
+        else:
+            print("ERROR: invalid command. Try again.")
 
         # # except Exception as e:
         # #     print(f"ERROR: {e}")

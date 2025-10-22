@@ -172,7 +172,7 @@ class IndexLineMapper:
 
 
 
-def get_in_context_matches(pattern: str, file: str, student_name: str, uin: str, email: str, file_name: str, case_sensitive: bool, pretty_printing: bool):
+def get_in_context_matches(pattern: str, file: str, student_name: str, uin: str, email: str, file_name: str, match_number: int, case_sensitive: bool, pretty_printing: bool, first_only: bool):
     output_string = ""
 
     UNDERLINE_START = None
@@ -185,14 +185,10 @@ def get_in_context_matches(pattern: str, file: str, student_name: str, uin: str,
         UNDERLINE_END = ""
 
     ilm = IndexLineMapper(file)
-    student_info = f"{student_name} {uin} {email}"
-    matches_header = f"{UNDERLINE_START}{student_info}{UNDERLINE_END}  -  {UNDERLINE_START}{file_name}{UNDERLINE_END}"
+    student_info = f"{student_name}, {uin}, {email}"
+    matches_header = f"Match #{match_number}  -  {UNDERLINE_START}{student_info}{UNDERLINE_END}  -  {UNDERLINE_START}{file_name}{UNDERLINE_END}"
     line_ext_length = len(matches_header) + len(str(ilm.getMaxLineNum())) + 3 - len(f"{UNDERLINE_START}{UNDERLINE_END}{UNDERLINE_START}{UNDERLINE_END}")
 
-    # Print student info header
-    output_string += (len(str(ilm.getMaxLineNum()))*'─' + "─┬─" + line_ext_length*'─') + "\n"
-    output_string += (len(str(ilm.getMaxLineNum()))*' ' + ' │ ' + matches_header) + "\n"
-    output_string += (len(str(ilm.getMaxLineNum()))*'─' + "─┼─" + line_ext_length*'─') + "\n"
 
     # Save all matches with context to matches_with_context
     matches = None
@@ -211,9 +207,24 @@ def get_in_context_matches(pattern: str, file: str, student_name: str, uin: str,
         else:
             matches_with_context.append(ilm.getNumberedLinesWithContext(all_line_nums))
     
+    # Only print header if there were no matches
+    if (matches_with_context == []):
+        output_string += (len(str(ilm.getMaxLineNum()))*'─' + "───" + line_ext_length*'─') + "\n"
+        output_string += (3*' ' + matches_header) + "\n"
+        output_string += (len(str(ilm.getMaxLineNum()))*'─' + "───" + line_ext_length*'─') + "\n"
+        return output_string
+
+    # Remain only the first element in matches with context if `-f` flag is passed
+    if (first_only):
+        matches_with_context = matches_with_context[0:1]
+    
+    # Print student info header
+    output_string += (len(str(ilm.getMaxLineNum()))*'─' + "───" + line_ext_length*'─') + "\n"
+    output_string += (3*' ' + matches_header) + "\n"
+    output_string += (len(str(ilm.getMaxLineNum()))*'─' + "─┬─" + line_ext_length*'─') + "\n"
+
     # Print the matches stored with matches_with_context
     output_string += (('\n' + len(str(ilm.getMaxLineNum()))*'─' + "─┼─" + line_ext_length*'─' + "\n").join(matches_with_context)) + "\n"
-
     output_string += (len(str(ilm.getMaxLineNum()))*'─' + "─┴─" + line_ext_length*'─') + "\n"
 
     return output_string
