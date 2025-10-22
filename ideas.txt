@@ -23,6 +23,9 @@ Commands for first release:
         * Prints ALL matching sections with their context.
     regex all -v -f <pattern here>
         * Same as above but only prints first match (with context)
+    regex all -v -f -outf myfile.txt <pattern here>
+        * Same as above but only prints first match (with context)
+        * SAVES TO OUTPUT FILE NAMED myfile.txt
     regex all <pattern here>
         * Only returns list of names of people whose submissions match the regex.
     regex all -case <pattern here>

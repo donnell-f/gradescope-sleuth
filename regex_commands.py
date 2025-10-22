@@ -9,7 +9,7 @@ import functools
 from tabulate import tabulate
 
 from .argument_parsing import ArgumentParser, ParsedArguments
-from .regex_backend import in_context_matches
+from .regex_backend import get_in_context_matches
 
 
 # Added LRU cache for speed
@@ -44,7 +44,11 @@ def regex_all(deliverables: dict[str,str], parsed_args: ParsedArguments):
     case_sensitive = parsed_args.get_argument('-csens')
     verbose = parsed_args.get_argument('-v')
     first_only = parsed_args.get_argument('-f')
+    out_file = parsed_args.get_argument('-outf')[0]
     pattern = parsed_args.get_remainder()
+
+    # Open file in parent dir if given
+    outf = open(f"../{out_file}", "a")
 
     # Make sure arguments make actual sense
     if (first_only and (not verbose)):
@@ -73,9 +77,22 @@ def regex_all(deliverables: dict[str,str], parsed_args: ParsedArguments):
     if (verbose):
         curs.execute(f"SELECT * FROM submissions WHERE {condition_string}", pattern_tuple)
         row_matches = curs.fetchall()
-        for rm in row_matches:
+
+        for rmi in range(len(row_matches)):
+            student_name = row_matches[rmi][0 + len(deliverables) + 1]
+            uin = row_matches[rmi][0 + len(deliverables) + 2]
+            email = row_matches[rmi][0 + len(deliverables) + 3]
             for k in range(len(deliv_cols)):
-                in_context_matches(pattern, rm[1 + k], deliv_files[k])
+                print(get_in_context_matches(pattern, row_matches[rmi][1 + k], student_name, uin, email, deliv_files[k], case_sensitive, pretty_printing=True))
+                if (out_file != False):
+                    outf.write(get_in_context_matches(pattern, row_matches[rmi][1 + k], student_name, uin, email, deliv_files[k], case_sensitive, pretty_printing=False))
+
+            if (rmi != len(row_matches) - 1):
+                print("\n\n\n\n")
+                if (out_file != False):
+                    outf.write('\n\n\n\n')
+
+
         return
 
 

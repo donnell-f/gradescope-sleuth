@@ -44,6 +44,7 @@ def main():
     regex_all_argparser.add_argument('-csens', 0)
     regex_all_argparser.add_argument('-v', 0)
     regex_all_argparser.add_argument('-f', 0)
+    regex_all_argparser.add_argument('-outf', 1)
 
     # Run the main loop to prompt user
     while (True):

@@ -82,7 +82,7 @@ class ArgumentParser:
                     args_consumption_map[startpos] = True
                     output_args[a] = []
                     # Handle the arg's parameters
-                    for offset in range(1, len(self.arguments[a]) + 1):
+                    for offset in range(1, self.arguments[a] + 1):
                         args_consumption_map[startpos + offset] = True
                         output_args[a].append(cmd_split[startpos + offset])
                 else:
