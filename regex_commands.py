@@ -1,13 +1,10 @@
-import yaml
 import sqlite3
 import os
 import platform
 from datetime import datetime
-import json
 import re
 import functools
 from tabulate import tabulate
-from enum import Enum
 
 from .argument_parsing import ArgumentParser, ParsedArguments
 from .regex_backend import get_in_context_matches
@@ -183,9 +180,9 @@ def regex_one(deliverables: dict[str,str], parsed_args: ParsedArguments):
         id_type_colname = 'email'
         id_value = email_arg
     if (id_arg_count > 1):
-        raise ValueError("Too many id arguments. You must identify a student using exactly one form of id.")
+        raise NameError("Too many id arguments. You must identify a student using exactly one form of id.")
     if (id_arg_count < 1):
-        raise ValueError("Too few id arguments. You must identify a student using exactly one form of id.")
+        raise NameError("Too few id arguments. You must identify a student using exactly one form of id.")
 
     conn = sqlite3.connect("submissions_db.db")
 
@@ -197,12 +194,14 @@ def regex_one(deliverables: dict[str,str], parsed_args: ParsedArguments):
     
     curs = conn.cursor()
 
+    # Find student with matching id
     curs.execute(f"SELECT * FROM submissions WHERE {id_type_colname} = ?", (id_value,))
     row_matches = curs.fetchall()
 
     if (len(row_matches) == 0):
         raise NameError("Could not find that student in the database.")
 
+    # Print matches in that student's code
     print_matching_database_rows(pattern, row_matches, deliv_cols, deliv_files, case_sensitive, first_only, out_file, match_number_enabled=False)
     return
 

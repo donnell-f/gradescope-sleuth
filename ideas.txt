@@ -38,8 +38,8 @@ Commands for first release:
     print uin XXXXXXXXX
         * Print all deliverable files that corresponld to a uin (I think there is only one saved submission per uin)
         * NOTE: print with Pygments syntax highlighting!
-    sketchy deadlines -h=1.5
-        * Look for submissions that are sketchy because they were submitted only 1.5 hours (or less) before the deadline.
+    sketchy timestamps -h 1.5
+        * Look for submissions that are sketchy because timestamps show that they were submitted only 1.5 hours (or less) before the deadline.
         * For now, we will ignore late submissions (e.g. submitted -3 hours after deadline) because that's too complicated.
     sketchy attempts 4
         * Look for submissions that are sketchy because they got their final score after <= 4 attempts.

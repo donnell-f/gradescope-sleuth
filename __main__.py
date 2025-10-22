@@ -3,6 +3,7 @@ import sqlite3
 import os
 import platform
 import json
+import date
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.formatted_text import ANSI
@@ -10,6 +11,7 @@ from prompt_toolkit.formatted_text import ANSI
 from .initialize import initialize
 from .regex_commands import regex_all, regex_one
 from .argument_parsing import ArgumentParser, is_command
+from .sketchy_commands import sketchy_timestamps, sketchy_attempts
 
 CYAN = '\033[36m'
 RESET = '\033[0m'
@@ -45,18 +47,22 @@ def main():
 
     # # Make parsers
     # `regex all` parser
-    regex_all_argparser = ArgumentParser("regex all")
-    regex_all_argparser.add_argument('-case', 0)
-    regex_all_argparser.add_argument('-v', 0)
-    regex_all_argparser.add_argument('-f', 0)
-    regex_all_argparser.add_argument('-outf', 1)
+    regex_all_parser = ArgumentParser("regex all")
+    regex_all_parser.add_argument('-case', 0)
+    regex_all_parser.add_argument('-v', 0)
+    regex_all_parser.add_argument('-f', 0)
+    regex_all_parser.add_argument('-outf', 1)
     # `regex one` parser
-    regex_uin_argparser = ArgumentParser("regex one")
-    regex_all_argparser.add_argument('-uin', 1)
-    regex_all_argparser.add_argument('-email', 1)
-    regex_all_argparser.add_argument('-case', 0)
-    regex_all_argparser.add_argument('-f', 0)
-    regex_all_argparser.add_argument('-outf', 1)
+    regex_one_parser = ArgumentParser("regex one")
+    regex_one_parser.add_argument('-uin', 1)
+    regex_one_parser.add_argument('-email', 1)
+    regex_one_parser.add_argument('-case', 0)
+    regex_one_parser.add_argument('-f', 0)
+    regex_one_parser.add_argument('-outf', 1)
+    # `sketchy timestamps` parser
+    sketchy_timestamps_parser = ArgumentParser("sketchy timestamps")
+    sketchy_timestamps_parser.add_argument("-h", 1)
+
 
     # Create command history file if not exists
     if (not os.path.isfile("./command_history.log")):
@@ -90,20 +96,35 @@ def main():
         elif (is_command(raw_input, "regex all")):
             regex_all(
                 config_dict['deliverables_column_file_mapping'],
-                regex_all_argparser.parse_args(raw_input)
+                regex_all_parser.parse_args(raw_input)
             )
             continue
 
+        # Handle `regex one` command
         elif (is_command(raw_input, "regex one")):
             try:
                 regex_one(
                     config_dict['deliverables_column_file_mapping'],
-                    regex_uin_argparser.parse_args(raw_input)
+                    regex_one_parser.parse_args(raw_input)
                 )
             except NameError as e:
+                # Catches bad id input error
                 print(f"ERROR: {e}")
                 print("Try again.")
-                continue
+            continue
+        
+        # Handle `sketchy timestamps` command
+        elif (is_command(raw_input, "sketchy timestamps")):
+            try:
+                sketchy_timestamps(
+                    sketchy_timestamps_parser.parse_args(raw_input),
+                    config_dict['due_date']
+                )
+            except ValueError as e:
+                # Catches no hour input error
+                print(f"ERROR: {e}")
+                print("Try again.")
+            continue
 
         # Handle `reset` command
         elif (raw_input == "reset"):
