@@ -46,6 +46,8 @@ class IndexLineMapper:
         low = 0
         high = len(self.lines) - 1
 
+        # Find the line index that corresponds to the index of a character
+        # in the string using Binary Search.
         while (lineIndex == None):
             mid = low + (high - low) // 2
             last_line_offset = self.lines[mid - 1][2] if mid - 1 >= 0 else 0
@@ -74,7 +76,7 @@ class IndexLineMapper:
         if (lineIndex == -1):
             raise ValueError("Could not get line because string index is out of range.")
 
-        # Return the line *number*
+        # Convert the found index into a line number and return.
         return lineIndex + 1
 
 
@@ -172,7 +174,7 @@ class IndexLineMapper:
 
 
 
-def get_in_context_matches(pattern: str, file: str, student_name: str, uin: str, email: str, file_name: str, match_number: int, case_sensitive: bool, pretty_printing: bool, first_only: bool):
+def get_in_context_matches(pattern: str, file: str, student_name: str, uin: str, email: str, file_name: str, match_number_enabled: bool, match_number: int, case_sensitive: bool, pretty_printing: bool, first_only: bool):
     output_string = ""
 
     UNDERLINE_START = None
@@ -186,7 +188,11 @@ def get_in_context_matches(pattern: str, file: str, student_name: str, uin: str,
 
     ilm = IndexLineMapper(file)
     student_info = f"{student_name}, {uin}, {email}"
-    matches_header = f"Match #{match_number}  -  {UNDERLINE_START}{student_info}{UNDERLINE_END}  -  {UNDERLINE_START}{file_name}{UNDERLINE_END}"
+    matches_header = None
+    if match_number_enabled:
+        matches_header = f"Match #{match_number}  -  {UNDERLINE_START}{student_info}{UNDERLINE_END}  -  {UNDERLINE_START}{file_name}{UNDERLINE_END}"
+    else:
+        matches_header = f"{UNDERLINE_START}{student_info}{UNDERLINE_END}  -  {UNDERLINE_START}{file_name}{UNDERLINE_END}"
     line_ext_length = len(matches_header) + len(str(ilm.getMaxLineNum())) + 3 - len(f"{UNDERLINE_START}{UNDERLINE_END}{UNDERLINE_START}{UNDERLINE_END}")
 
 

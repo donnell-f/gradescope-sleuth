@@ -8,7 +8,7 @@ from prompt_toolkit.history import FileHistory
 from prompt_toolkit.formatted_text import ANSI
 
 from .initialize import initialize
-from .regex_commands import regex_all
+from .regex_commands import regex_all, regex_one
 from .argument_parsing import ArgumentParser, is_command
 
 CYAN = '\033[36m'
@@ -50,6 +50,13 @@ def main():
     regex_all_argparser.add_argument('-v', 0)
     regex_all_argparser.add_argument('-f', 0)
     regex_all_argparser.add_argument('-outf', 1)
+    # `regex one` parser
+    regex_uin_argparser = ArgumentParser("regex one")
+    regex_all_argparser.add_argument('-uin', 1)
+    regex_all_argparser.add_argument('-email', 1)
+    regex_all_argparser.add_argument('-case', 0)
+    regex_all_argparser.add_argument('-f', 0)
+    regex_all_argparser.add_argument('-outf', 1)
 
     # Create command history file if not exists
     if (not os.path.isfile("./command_history.log")):
@@ -81,9 +88,22 @@ def main():
 
         # Handle `regex all` command
         elif (is_command(raw_input, "regex all")):
-            regex_all(config_dict['deliverables_column_file_mapping'],
-                        regex_all_argparser.parse_args(raw_input))
+            regex_all(
+                config_dict['deliverables_column_file_mapping'],
+                regex_all_argparser.parse_args(raw_input)
+            )
             continue
+
+        elif (is_command(raw_input, "regex one")):
+            try:
+                regex_one(
+                    config_dict['deliverables_column_file_mapping'],
+                    regex_uin_argparser.parse_args(raw_input)
+                )
+            except NameError as e:
+                print(f"ERROR: {e}")
+                print("Try again.")
+                continue
 
         # Handle `reset` command
         elif (raw_input == "reset"):
