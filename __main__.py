@@ -3,7 +3,7 @@ import sqlite3
 import os
 import platform
 import json
-import date
+import datetime
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.formatted_text import ANSI

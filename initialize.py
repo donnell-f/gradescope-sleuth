@@ -57,8 +57,8 @@ def initialize():
     deliverable_colnames = [d.lower().replace(".", "_") for d in deliverable_fnames]
     deliverable_cols = [d + " TEXT" for d in deliverable_colnames]
 
-    table_colnames = ["submission_id"] + deliverable_colnames + ["student_name", "uin", "email", "timestamp", "score"]
-    table_columns = ["submission_id INTEGER PRIMARY KEY"] + deliverable_cols + ["student_name TEXT NOT NULL", "uin INTEGER NOT NULL", "email TEXT", "timestamp TEXT", "score REAL"]
+    table_colnames = ["submission_id"] + deliverable_colnames + ["student_name", "uin", "email", "last_timestamp", "first_timestamp", "final_score", "attempt_count"]
+    table_columns = ["submission_id INTEGER PRIMARY KEY"] + deliverable_cols + ["student_name TEXT NOT NULL", "uin INTEGER NOT NULL", "email TEXT", "last_timestamp TEXT", "first_timestamp TEXT", "final_score REAL", "attempt_count INTEGER"]
 
     conn = sqlite3.connect("submissions_db.db")
     curs = conn.cursor()
@@ -70,9 +70,9 @@ def initialize():
     # Dictionary with empty string as placeholder
     deliverables_dict = {cname: "" for cname in deliverable_colnames}
     # Add all submission metadata to database
-    sub_count = 0
+    total_submissions_count = 0
     for s in submissions:
-        print(f"Uploading {sub_count+1}/{len(submissions)} submssions to database. Current submission: {s}.")
+        print(f"Uploading {total_submissions_count+1}/{len(submissions)} submssions to database. Current submission: {s}.")
         submission_id = int(s[s.index('_')+1:])
 
         # Try reading all deliverables, if they exist
@@ -85,11 +85,27 @@ def initialize():
                 print(f">>> Submission {submission_id} does not have the file {deliverable_fnames[j]}. Skipping...")
 
         # Add stuff to db
-        inserted_values = (submission_id,) + tuple(deliverables_dict[cn] for cn in deliverable_colnames) + (submissions[s][":submitters"][0][":name"], submissions[s][":submitters"][0][":sid"], submissions[s][":submitters"][0][":email"], str(submissions[s][":created_at"]), submissions[s][":score"])
+        last_timestamp = submissions[s][":created_at"].strftime("%Y-%m-%d %H:%M:%S")    # yml autoconverts to datetime, so strftime is needed
+        first_timestamp = None
+        attempt_count = len(submissions[s][":history"]) + 1    # Last attempt is not included in :history
+        if (attempt_count > 1):
+            first_timestamp = submissions[s][":history"][-1][":created_at"].strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            first_timestamp = last_timestamp
+
+        inserted_values = (submission_id,) + \
+                        tuple(deliverables_dict[cn] for cn in deliverable_colnames) + \
+                        (submissions[s][":submitters"][0][":name"],
+                         submissions[s][":submitters"][0][":sid"],
+                         submissions[s][":submitters"][0][":email"],
+                         last_timestamp,
+                         first_timestamp,
+                         submissions[s][":score"],
+                         attempt_count)
         question_marks = ",".join(['?' for _ in range(len(inserted_values))])
         curs.execute(f'''INSERT INTO submissions({", ".join(table_colnames)}) VALUES ({question_marks})''', inserted_values)
 
-        sub_count += 1
+        total_submissions_count += 1
 
 
     # Write relevant config info to config.json
@@ -98,7 +114,7 @@ def initialize():
         config_dict["assignment_name"] = assignment_name
         config_dict["due_date"] = due_date.strftime("%Y-%m-%d %H:%M:%S")
         config_dict["deliverables_column_file_mapping"] = {deliverable_colnames[i]: deliverable_fnames[i] for i in range(len(deliverable_colnames))}
-        config_dict["submission_count"] = sub_count     # Not necessary, but perhaps good to know
+        config_dict["submissions_count_total"] = total_submissions_count     # Not necessary, but perhaps good to know
         with open("config.json", "w") as fjson:
             json.dump(config_dict, fjson, indent=4)
     except:
