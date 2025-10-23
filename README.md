@@ -1,11 +1,9 @@
 # Gradescope Sleuth
 
-Welcome to Gradescope Sleuth! This tool was designed to make it easier to
-look for plagiarized and AI-generated code in Gradescope submissions. Below
-are a list of commands the program supports.
+Welcome to Gradescope Sleuth! This tool was designed to make it easier to look for plagiarized and AI-generated code in Gradescope submissions. Below are a list of commands the program supports.
 
 
-Commands:
+Commands (from help message):
 
     regex all [-v] [-f] [-case] [-simple] [-outf] <expression>
         By default, prints a list of all students with code submissions that
