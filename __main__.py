@@ -1,4 +1,29 @@
-import yaml
+MISSING_PACKAGES = False
+
+try:
+    import yaml
+except:
+    print("The `PyYAML` package is missing. Please run `pip install PyYAML`.")
+    MISSING_PACKAGES = True
+try:
+    import prompt_toolkit
+except:
+    print("The `prompt_toolkit` package is missing. Please run `pip install prompt_toolkit`.")
+    MISSING_PACKAGES = True
+try:
+    import pygments
+except:
+    print("The `Pygments` package is missing. Please run `pip install Pygments`.")
+    MISSING_PACKAGES = True
+try:
+    import tabulate
+except:
+    print("The `tabulate` package is missing. Please run `pip install tabulate`.")
+    MISSING_PACKAGES = True
+
+if (MISSING_PACKAGES):
+    exit()
+
 import sqlite3
 import os
 import platform

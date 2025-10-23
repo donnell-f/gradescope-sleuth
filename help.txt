@@ -2,6 +2,7 @@ Welcome to Gradescope Sleuth! This tool was designed to make it easier to
 look for plagiarized and AI-generated code in Gradescope submissions. Below
 are a list of commands the program supports.
 
+
 Commands:
 
     regex all [-v] [-f] [-case] [-simple] [-outf] <expression>
@@ -24,6 +25,7 @@ Commands:
         -outf <filename>
             Writes output to <filename>.
 
+
     regex one {-uin | -email} [-case] [-f] [-outf] <expression>
         Print all in-context matches for a single person's code.
     Arguments:
@@ -35,6 +37,7 @@ Commands:
             Only return the first in-context match.
         -outf
             Writes output to <filename>.
+
 
     sketchy timestamps {-h} [-late] [-simple]
         Print a list of all students whose first submission was submitted
@@ -48,6 +51,7 @@ Commands:
         -simple
             Prints the returned submissions as a simple list of names and
             UINs.
+
 
     sketchy attempts {-natt} {-minsc} [-nolate] [-simple]
         Print a list of all students that got a score of <min score> after
@@ -64,6 +68,7 @@ Commands:
             Prints the returned submissions as a simple list of names and
             UINs.
 
+
     print {-uin} {-file} [-nonums]
         Print the entirety of a deliverable file that a student submitted
         with syntax coloring and line numbers.
@@ -74,6 +79,7 @@ Commands:
             The desired student's UIN.
         -nonums
             Don't print line numbers.
+
 
     exit, quit, q
         Exits the program.
