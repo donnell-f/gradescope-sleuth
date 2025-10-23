@@ -1,5 +1,9 @@
 # Gradescope Sleuth
 
+[Program demonstration](https://docs.google.com/document/d/1PLf4dJOz-h75W82jUFgdBCSOFhZq0y1FdYY8eaHZDsc/edit?usp=sharing)
+
+\
+
 Welcome to Gradescope Sleuth! This tool was designed to make it easier to look for plagiarized and AI-generated code in Gradescope submissions. Below are a list of commands the program supports.
 
 \
@@ -94,8 +98,5 @@ Usage notes:
 - Only put one dash for arguments. The argument parser is not sophisticated enough to handle --args.
 - Don't put quotes around arguments.
 
-\
 
-Here is a video of the program being used.
 
-[video coming soon]
