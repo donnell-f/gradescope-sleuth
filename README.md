@@ -2,11 +2,7 @@
 
 [Program demonstration](https://docs.google.com/document/d/1PLf4dJOz-h75W82jUFgdBCSOFhZq0y1FdYY8eaHZDsc/edit?usp=sharing)
 
-\
-
 Welcome to Gradescope Sleuth! This tool was designed to make it easier to look for plagiarized and AI-generated code in Gradescope submissions. Below are a list of commands the program supports.
-
-\
 
 Commands (from help message):
 
