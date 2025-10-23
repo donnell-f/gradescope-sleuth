@@ -165,8 +165,8 @@ def initialize_database():
 
 
 def initialize_all():
-    # Change into gradescope_sleuth folder since we will be running this as a module
-    os.chdir("./gradescope_sleuth")
+    # Change into gradescope-sleuth folder since we will be running this as a module
+    os.chdir("./gradescope-sleuth")
 
     # Print the logo
     with open("./logo.txt", "r") as f:
