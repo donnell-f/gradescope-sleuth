@@ -11,6 +11,7 @@ from .regex_commands import regex_all, regex_one
 from .argument_parsing import ArgumentParser, is_command
 from .sketchy_commands import sketchy_timestamps, sketchy_attempts
 from .make_parsers import make_parsers
+from .print_commands import print_student
 
 CYAN = '\033[36m'
 RESET = '\033[0m'
@@ -26,6 +27,7 @@ def main():
     regex_one_parser = parsers['regex one']
     sketchy_timestamps_parser = parsers['sketchy timestamps']
     sketchy_attempts_parser = parsers['sketchy attempts']
+    print_parser = parsers['print']
 
 
     while (True):
@@ -78,6 +80,11 @@ def main():
                 )
                 continue
 
+            # Handle `print`
+            elif (is_command(raw_input, "print")):
+                print_student(config_dict["deliverables_column_file_mapping"], print_parser.parse_args(raw_input))
+                continue
+
             # Handle `reset` command
             elif (raw_input == "reset"):
                 confirm_reset = input("Really reset database? (yes/no): ")
@@ -88,6 +95,10 @@ def main():
                     os.remove("config.json")
                     print("Reset complete. Reopen the app for changes to take effect.")
                     break     # Note: break or exit()?
+
+            elif (raw_input == "help"):
+                with open("./help.txt", "r") as helpf:
+                    print(helpf.read())
 
             # Handle `quit` and `exit` commands
             elif (raw_input == "quit" or raw_input == "exit" or raw_input == "q"):

@@ -30,11 +30,18 @@ def make_parsers():
     sketchy_attempts_parser.add_argument('-nolate', 0)
     sketchy_attempts_parser.add_argument('-simple', 0)
 
+    # `print` parser
+    print_parser = ArgumentParser('print')
+    print_parser.add_argument('-uin', 1)
+    print_parser.add_argument('-file', 1)
+    print_parser.add_argument('-nonums', 0)
+
     return {
         'regex all': regex_all_parser,
         'regex one': regex_one_parser,
         'sketchy timestamps': sketchy_timestamps_parser,
-        'sketchy attempts': sketchy_attempts_parser
+        'sketchy attempts': sketchy_attempts_parser,
+        'print': print_parser
     }
 
 
