@@ -32,7 +32,7 @@ def detect_deliverables(submissions: dict) -> list[str]:
 
 
 def initialize_database():
-    assignment_name = input("What is the name of this assignment?: ")
+    assignment_name = input("What would you like to call this assignment?: ")
     assignment_name = assignment_name.strip()
 
     # Letting the user retry this one bc I could see this being a bit tricky.
