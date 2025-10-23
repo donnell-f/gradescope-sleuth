@@ -4,6 +4,8 @@ import os
 import platform
 from datetime import datetime, timedelta
 import json
+from prompt_toolkit import PromptSession
+from prompt_toolkit.history import FileHistory
 
 ymlloader = yaml.CSafeLoader
 
@@ -29,7 +31,7 @@ def detect_deliverables(submissions: dict) -> list[str]:
     return list(all_cpp_submitted.keys())
 
 
-def initialize():
+def initialize_database():
     assignment_name = input("What is the name of this assignment?: ")
     assignment_name = assignment_name.strip()
 
@@ -159,4 +161,49 @@ def initialize():
     conn.close()
     
 
+
+
+
+def initialize_all():
+    # Change into gradescope_sleuth folder since we will be running this as a module
+    os.chdir("./gradescope_sleuth")
+
+    # Print the logo
+    with open("./logo.txt", "r") as f:
+        print(f.read())
+
+    # Test for config.json. If it doesn't exist, then the project hasn't been initialized, so initialize it.    
+    submissions = None
+    if (not os.path.isfile("./config.json")):
+        init_input = input("No config.json file detected. Want to initialize the program? (y/n): ")
+        if (init_input.lower() != "y"):
+            print("Alright. See you later.")
+            exit()
+        print("Initializing program...")
+        initialize_database()
+        print("Initialization complete!")
+    
+    # Load data from config.json
+    config_dict = None
+    try:
+        with open("config.json", "r") as fjson:
+            config_dict = json.load(fjson)
+    except:
+        print("ERROR: could not load config.json! Shutting down...")
+        exit()
+    assn_name = config_dict['assignment_name']
+
+    # Create command history file if not exists
+    if (not os.path.isfile("./command_history.log")):
+        with open("./command_history.log", "a") as histf:
+            pass
+    
+    # Create the prompt session
+    prompt_session = PromptSession(history=FileHistory("command_history.log"))
+
+    return {
+        "config_dict": config_dict,
+        "assn_name": assn_name,
+        "prompt_session": prompt_session
+    }
 

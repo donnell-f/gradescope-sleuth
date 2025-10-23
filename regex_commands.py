@@ -3,36 +3,10 @@ import os
 import platform
 from datetime import datetime
 import re
-import functools
 from tabulate import tabulate
 
 from .argument_parsing import ArgumentParser, ParsedArguments
-from .regex_backend import get_in_context_matches
-
-
-# Added LRU cache for speed
-@functools.lru_cache(maxsize=256)
-def _compile_cinsensitive(pat):
-    return re.compile(pat, re.IGNORECASE)
-@functools.lru_cache(maxsize=256)
-def _compile_csensitive(pat):
-    return re.compile(pat)
-
-# Define two implementations of the regex function: one for case insensitive, and one for case sensitive
-def py_regexp_cinsensitive(pattern, value):
-    if pattern is None or value is None:
-        return 0
-    try:
-        return 1 if _compile_cinsensitive(pattern).search(str(value)) else 0
-    except re.error:
-        return 0
-def py_regexp_csensitive(pattern, value):
-    if pattern is None or value is None:
-        return 0
-    try:
-        return 1 if _compile_csensitive(pattern).search(str(value)) else 0
-    except re.error:
-        return 0
+from .regex_backend import get_in_context_matches, py_regexp_cinsensitive, py_regexp_csensitive
 
 def print_matching_database_rows(pattern, row_matches, deliv_cols, deliv_files, case_sensitive, first_only, out_file, match_number_enabled: bool):
     # Set up out_file depending on what was passed in
@@ -108,6 +82,7 @@ def regex_all(deliverables: dict[str,str], parsed_args: ParsedArguments):
     verbose = parsed_args.get_argument('-v')
     first_only = parsed_args.get_argument('-f')
     out_file = parsed_args.get_argument('-outf')
+    simple_output = parsed_args.get_argument('-simple')
     pattern = parsed_args.get_remainder()
 
     # Set up out_file
@@ -116,7 +91,9 @@ def regex_all(deliverables: dict[str,str], parsed_args: ParsedArguments):
 
     # Make sure arguments make actual sense
     if (first_only and (not verbose)):
-        raise ValueError("Bad args -- the argument -f requires -v.")
+        raise NameError("Bad args -- the argument -f requires -v.")
+    if (simple_output and verbose):
+        raise NameError("Output cannot be both simple and verbose. Remove -v or -simple.")
 
     conn = sqlite3.connect("submissions_db.db")
 
@@ -135,12 +112,20 @@ def regex_all(deliverables: dict[str,str], parsed_args: ParsedArguments):
     if (not verbose):
         # Print all student submissions matching pattern and then return
         curs.execute(f"SELECT student_name, uin, email FROM submissions WHERE {condition_string}", pattern_tuple)
-        print(tabulate([("Name", "UIN", "E-Mail")] + curs.fetchall(), headers="firstrow", tablefmt="psql"))
+        row_matches = curs.fetchall()
+        print(f"{len(row_matches)} matching students.")
+        if (not simple_output):
+            print(tabulate([("Name", "UIN", "E-Mail")] + row_matches, headers="firstrow", tablefmt="psql"))
+        else:
+            for mr in row_matches:
+                print(f"{mr[0]}, {mr[1]}")
         return
 
     if (verbose):
         curs.execute(f"SELECT * FROM submissions WHERE {condition_string}", pattern_tuple)
         row_matches = curs.fetchall()
+
+        print(f"{len(row_matches)} matching students...")
 
         print_matching_database_rows(pattern, row_matches, deliv_cols, deliv_files, case_sensitive, first_only, out_file, match_number_enabled=True)
         return

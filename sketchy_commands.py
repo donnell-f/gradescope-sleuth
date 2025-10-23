@@ -26,6 +26,7 @@ def get_hour_difference(start_date_input, end_date_input):
 def sketchy_timestamps(due_date_input: str, late_due_date_input: str, parsed_args: ParsedArguments):
     hours_before = parsed_args.get_argument('-h')
     use_late_dd = parsed_args.get_argument('-late')
+    simple_output = parsed_args.get_argument('-simple')
     if (hours_before == False):
         raise NameError("Command `sketchy timestamps` needs -h arg.")
     else:
@@ -50,13 +51,18 @@ def sketchy_timestamps(due_date_input: str, late_due_date_input: str, parsed_arg
     sketchy_students = curs.fetchall()
     sketchy_students = [(ss[0], ss[1], ss[2], round(get_hour_difference(ss[3], chosen_due_date), 2)) for ss in sketchy_students]
     print(f"{len(sketchy_students)} matches.")
-    print(tabulate([("Name", "UIN", "E-Mail", "Hrs Before Deadline")] + sketchy_students, headers="firstrow", tablefmt="psql"))
+    if (not simple_output):
+        print(tabulate([("Name", "UIN", "E-Mail", "Hrs Before Deadline")] + sketchy_students, headers="firstrow", tablefmt="psql"))
+    else:
+        for ss in sketchy_students:
+            print(f"{ss[0]}, {ss[1]}")
 
 
 def sketchy_attempts(due_date_input: str, parsed_args: ParsedArguments):
     attempt_count = parsed_args.get_argument('-natt')
     min_score = parsed_args.get_argument('-minsc')
     no_late_submissions = parsed_args.get_argument('-nolate')
+    simple_output = parsed_args.get_argument('-simple')
     if (attempt_count == False):
         raise ValueError("You must specify a maximum number of attempts with -natt.")
     else:
@@ -79,6 +85,10 @@ def sketchy_attempts(due_date_input: str, parsed_args: ParsedArguments):
     # Print the sketchy students found above
     sketchy_students = curs.fetchall()
     print(f"{len(sketchy_students)} matches.")
-    print(tabulate([("Name", "UIN", "E-Mail", "Attempt Count")] + sketchy_students, headers="firstrow", tablefmt="psql"))
+    if (not simple_output):
+        print(tabulate([("Name", "UIN", "E-Mail", "Attempt Count")] + sketchy_students, headers="firstrow", tablefmt="psql"))
+    else:
+        for ss in sketchy_students:
+            print(f"{ss[0]}, {ss[1]}")
 
 
