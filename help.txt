@@ -23,7 +23,9 @@ Commands:
             Prints matching submissions as a simple list of names and UINs.
             Cannot be used with -v.
         -outf <filename>
-            Writes output to <filename>.
+            Writes output to <filename> in submissions directory. Note: don't
+            put quotes around the file name or specify a path. That is not
+            supported yet.
 
 
     regex one {-uin | -email} [-case] [-f] [-outf] <expression>
@@ -36,7 +38,9 @@ Commands:
         -f
             Only return the first in-context match.
         -outf
-            Writes output to <filename>.
+            Writes output to <filename> in submissions directory. Note: don't
+            put quotes around the file name or specify a path. That is not
+            supported yet.
 
 
     sketchy timestamps {-h} [-late] [-simple]

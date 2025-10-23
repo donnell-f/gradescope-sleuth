@@ -9,15 +9,10 @@ from .argument_parsing import ArgumentParser, ParsedArguments
 from .regex_backend import get_in_context_matches, py_regexp_cinsensitive, py_regexp_csensitive
 
 def print_matching_database_rows(pattern, row_matches, deliv_cols, deliv_files, case_sensitive, first_only, out_file, match_number_enabled: bool):
-    # Set up out_file depending on what was passed in
-    if (out_file != False):
-        out_file = out_file[0]
-
     # Open file in parent dir if given
     # Delete it if it already exists
-    if os.path.exists(f"../{out_file}"):
-        os.remove(f"../{out_file}")
-    outf = open(f"../{out_file}", "a")
+    
+    outf_string = ""
 
     # Iterate through each returned row from the database
     # Print the actual in-context matches for deliverable columns' data
@@ -47,8 +42,7 @@ def print_matching_database_rows(pattern, row_matches, deliv_cols, deliv_files, 
 
             # Print to file (optional)
             if (out_file != False):
-                outf.write(
-                    get_in_context_matches(
+                outf_string += get_in_context_matches(
                         pattern,
                         row_matches[rmi][1 + k],
                         student_name,
@@ -61,15 +55,17 @@ def print_matching_database_rows(pattern, row_matches, deliv_cols, deliv_files, 
                         pretty_printing=False,
                         first_only=first_only
                     )
-                )
 
         # Separate match results
         if (rmi != len(row_matches) - 1):
             print("\n\n\n\n\n", end='')
             if (out_file != False):
-                outf.write('\n\n\n\n\n')
+                outf_string += '\n\n\n\n\n'
         
-        outf.close()
+        # Write the output string to the file
+        if (out_file != False):
+            with open(f"../{out_file}", "w") as f:
+                f.write(outf_string)
 
 
 

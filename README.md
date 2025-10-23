@@ -2,6 +2,7 @@
 
 Welcome to Gradescope Sleuth! This tool was designed to make it easier to look for plagiarized and AI-generated code in Gradescope submissions. Below are a list of commands the program supports.
 
+\
 
 Commands (from help message):
 
@@ -23,7 +24,9 @@ Commands (from help message):
             Prints matching submissions as a simple list of names and UINs.
             Cannot be used with -v.
         -outf <filename>
-            Writes output to <filename>.
+            Writes output to <filename> in submissions directory. Note: don't
+            put quotes around the file name or specify a path. That is not
+            supported yet.
 
 
     regex one {-uin | -email} [-case] [-f] [-outf] <expression>
@@ -36,7 +39,9 @@ Commands (from help message):
         -f
             Only return the first in-context match.
         -outf
-            Writes output to <filename>.
+            Writes output to <filename> in submissions directory. Note: don't
+            put quotes around the file name or specify a path. That is not
+            supported yet.
 
 
     sketchy timestamps {-h} [-late] [-simple]
@@ -85,5 +90,12 @@ Commands (from help message):
         Exits the program.
 
 
+Usage notes:
+- Only put one dash for arguments. The argument parser is not sophisticated enough to handle --args.
+- Don't put quotes around arguments.
+
+\
+
 Here is a video of the program being used.
+
 [video coming soon]
