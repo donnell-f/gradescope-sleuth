@@ -28,6 +28,9 @@ def detect_deliverables(submissions: dict) -> list[str]:
     # Select only the files whose occurrance proportion is >= 0.80
     all_cpp_submitted = {k: all_cpp_submitted[k] for k in all_cpp_submitted if (all_cpp_submitted[k] >= 0.80)}
 
+    if (len(all_cpp_submitted) == 0):
+        raise ValueError("Did not detect even one deliverable.")
+
     return list(all_cpp_submitted.keys())
 
 

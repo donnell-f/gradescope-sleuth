@@ -23,7 +23,7 @@ def print_student(colname_fname_dict, parsed_args: ParsedArguments):
     else:
         uin = uin[0]
     if (file_name == False):
-        raise NameError("Please profile a file name with -file")
+        raise NameError("Please profile a deliverable file name with -file")
     else:
         file_name = file_name[0]
 
