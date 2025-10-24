@@ -25,6 +25,9 @@ Commands (from help message):
             Writes output to <filename> in submissions directory. Note: don't
             put quotes around the file name or specify a path. That is not
             supported yet.
+        -crad
+            Set the context radius for in-context matches (i.e. how many
+            lines to print above and below the match).
 
 
     regex one {-uin | -email} [-case] [-f] [-outf] <expression>
@@ -40,6 +43,9 @@ Commands (from help message):
             Writes output to <filename> in submissions directory. Note: don't
             put quotes around the file name or specify a path. That is not
             supported yet.
+        -crad
+            Set the context radius for in-context matches (i.e. how many
+            lines to print above and below the match).
 
 
     sketchy timestamps {-h} [-late] [-simple]

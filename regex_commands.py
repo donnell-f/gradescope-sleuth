@@ -85,7 +85,10 @@ def regex_all(deliverables: dict[str,str], parsed_args: ParsedArguments):
     pattern = parsed_args.get_remainder()
 
     if (context_radius != False):
-        context_radius = int(context_radius[0])
+        if (verbose == False):
+            raise NameError("Context radius makes no sense without -v.")
+        else:
+            context_radius = int(context_radius[0])
     else:
         # Default to 1
         context_radius = 1
