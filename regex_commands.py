@@ -8,7 +8,7 @@ from tabulate import tabulate
 from .argument_parsing import ArgumentParser, ParsedArguments
 from .regex_backend import get_in_context_matches, py_regexp_cinsensitive, py_regexp_csensitive
 
-def print_matching_database_rows(pattern, row_matches, deliv_cols, deliv_files, case_sensitive, first_only, out_file, match_number_enabled: bool):
+def print_matching_database_rows(pattern, row_matches, deliv_cols, deliv_files, case_sensitive, first_only, out_file, match_number_enabled: bool, context_radius: int):
     # Open file in parent dir if given
     # Delete it if it already exists
     
@@ -35,7 +35,8 @@ def print_matching_database_rows(pattern, row_matches, deliv_cols, deliv_files, 
                     rmi + 1,
                     case_sensitive,
                     pretty_printing=True,
-                    first_only=first_only
+                    first_only=first_only,
+                    context_radius=context_radius
                 ),
                 end=''
             )
@@ -53,7 +54,8 @@ def print_matching_database_rows(pattern, row_matches, deliv_cols, deliv_files, 
                         rmi + 1,
                         case_sensitive,
                         pretty_printing=False,
-                        first_only=first_only
+                        first_only=first_only,
+                        context_radius=context_radius
                     )
 
         # Separate match results
@@ -79,7 +81,14 @@ def regex_all(deliverables: dict[str,str], parsed_args: ParsedArguments):
     first_only = parsed_args.get_argument('-f')
     out_file = parsed_args.get_argument('-outf')
     simple_output = parsed_args.get_argument('-simple')
+    context_radius = parsed_args.get_argument('-crad')
     pattern = parsed_args.get_remainder()
+
+    if (context_radius != False):
+        context_radius = int(context_radius[0])
+    else:
+        # Default to 1
+        context_radius = 1
 
     # Set up out_file
     if (out_file != False):
@@ -123,7 +132,7 @@ def regex_all(deliverables: dict[str,str], parsed_args: ParsedArguments):
 
         print(f"{len(row_matches)} matching students...")
 
-        print_matching_database_rows(pattern, row_matches, deliv_cols, deliv_files, case_sensitive, first_only, out_file, match_number_enabled=True)
+        print_matching_database_rows(pattern, row_matches, deliv_cols, deliv_files, case_sensitive, first_only, out_file, match_number_enabled=True, context_radius=context_radius)
         return
 
 
@@ -138,7 +147,15 @@ def regex_one(deliverables: dict[str,str], parsed_args: ParsedArguments):
     email_arg = parsed_args.get_argument('-email')
     first_only = parsed_args.get_argument('-f')
     out_file = parsed_args.get_argument('-outf')
+    context_radius = parsed_args.get_argument('-crad')
     pattern = parsed_args.get_remainder()
+
+    # Check out context radius
+    if (context_radius != False):
+        context_radius = int(context_radius[0])
+    else:
+        # Default to 1
+        context_radius = 1
 
     # Set up args
     if (out_file != False):
@@ -183,7 +200,7 @@ def regex_one(deliverables: dict[str,str], parsed_args: ParsedArguments):
         raise NameError("Could not find that student in the database.")
 
     # Print matches in that student's code
-    print_matching_database_rows(pattern, row_matches, deliv_cols, deliv_files, case_sensitive, first_only, out_file, match_number_enabled=False)
+    print_matching_database_rows(pattern, row_matches, deliv_cols, deliv_files, case_sensitive, first_only, out_file, match_number_enabled=False, context_radius=context_radius)
     return
 
 

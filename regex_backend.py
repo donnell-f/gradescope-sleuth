@@ -8,7 +8,7 @@ import functools
 
 from .index_line_mapper import IndexLineMapper
 
-def get_in_context_matches(pattern: str, file: str, student_name: str, uin: str, email: str, file_name: str, match_number_enabled: bool, match_number: int, case_sensitive: bool, pretty_printing: bool, first_only: bool):
+def get_in_context_matches(pattern: str, file: str, student_name: str, uin: str, email: str, file_name: str, match_number_enabled: bool, match_number: int, case_sensitive: bool, pretty_printing: bool, first_only: bool, context_radius: int):
     output_string = ""
 
     UNDERLINE_START = None
@@ -43,9 +43,9 @@ def get_in_context_matches(pattern: str, file: str, student_name: str, uin: str,
         lastline = ilm.stringIndexToLineNum(m.end() - 1)
         all_line_nums = [lnum for lnum in range(firstline, lastline + 1)]
         if pretty_printing:
-            matches_with_context.append(ilm.getPrettyLinesWithContext(all_line_nums))
+            matches_with_context.append(ilm.getPrettyLinesWithContext(all_line_nums, context_radius=context_radius))
         else:
-            matches_with_context.append(ilm.getNumberedLinesWithContext(all_line_nums))
+            matches_with_context.append(ilm.getNumberedLinesWithContext(all_line_nums, context_radius=context_radius))
     
     # Only print header if there were no matches
     if (matches_with_context == []):

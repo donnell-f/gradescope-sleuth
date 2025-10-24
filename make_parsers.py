@@ -8,6 +8,7 @@ def make_parsers():
     regex_all_parser.add_argument('-f', 0)
     regex_all_parser.add_argument('-outf', 1)
     regex_all_parser.add_argument('-simple', 0)
+    regex_all_parser.add_argument('-crad', 1)
 
     # `regex one` parser
     regex_one_parser = ArgumentParser("regex one")
@@ -16,6 +17,7 @@ def make_parsers():
     regex_one_parser.add_argument('-case', 0)
     regex_one_parser.add_argument('-f', 0)
     regex_one_parser.add_argument('-outf', 1)
+    regex_one_parser.add_argument('-crad', 1)
 
     # `sketchy timestamps` parser
     sketchy_timestamps_parser = ArgumentParser("sketchy timestamps")
