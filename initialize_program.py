@@ -33,6 +33,35 @@ def detect_deliverables(submissions: dict) -> list[str]:
 
     return list(all_cpp_submitted.keys())
 
+def make_submission_deltas(submission_dict: dict):
+    submission_path = [(h[":created_at"], h[":score"]) for h in submission_dict[":history"]]
+    submission_path.append( (submission_dict[":created_at"], submission_dict[":score"]) )
+
+    submission_deltas = []
+    for spi in range(len(submission_path)):
+        if (spi != 0):
+            submission_deltas.append(
+                (
+                    (submission_path[spi][0] - submission_path[spi - 1][0]).total_seconds(),
+                    round(submission_path[spi][1], 2)
+                )
+            )
+        else:
+            submission_deltas.append( (0.0, round(submission_path[spi][1], 2)) )
+
+    # submission_deltas = [f"({sd[0]} hrs, {sd[1]} pts)" for sd in submission_deltas]
+    for sdi in range(len(submission_deltas)):
+        if (sdi == 0):
+            submission_deltas[sdi] = f"(initial, {submission_deltas[sdi][1]} pts)"
+        elif (submission_deltas[sdi][0] / 3600 < 1):
+            submission_deltas[sdi] = f"(+{round(submission_deltas[sdi][0] / 60)} mins, {submission_deltas[sdi][1]} pts)"
+        else:
+            submission_deltas[sdi] = f"(+{round(submission_deltas[sdi][0] / 3600, 1)} hrs, {submission_deltas[sdi][1]} pts)"
+
+    submission_deltas_str = " -> ".join(submission_deltas)
+
+    return submission_deltas_str
+
 
 def initialize_database():
     assignment_name = input("What would you like to call this assignment?: ")
@@ -93,8 +122,8 @@ def initialize_database():
     deliverable_colnames = [d.lower().replace(".", "_") for d in deliverable_fnames]
     deliverable_cols = [d + " TEXT" for d in deliverable_colnames]
 
-    table_colnames = ["submission_id"] + deliverable_colnames + ["student_name", "uin", "email", "first_timestamp", "last_timestamp", "final_score", "attempt_count"]
-    table_columns = ["submission_id INTEGER PRIMARY KEY"] + deliverable_cols + ["student_name TEXT NOT NULL", "uin INTEGER NOT NULL", "email TEXT", "first_timestamp TEXT", "last_timestamp TEXT", "final_score REAL", "attempt_count INTEGER"]
+    table_colnames = ["submission_id"] + deliverable_colnames + ["student_name", "uin", "email", "first_timestamp", "last_timestamp", "final_score", "attempt_count", "submission_deltas"]
+    table_columns = ["submission_id INTEGER PRIMARY KEY"] + deliverable_cols + ["student_name TEXT NOT NULL", "uin INTEGER NOT NULL", "email TEXT", "first_timestamp TEXT", "last_timestamp TEXT", "final_score REAL", "attempt_count INTEGER", "submission_deltas TEXT"]
 
     conn = sqlite3.connect("submissions_db.db")
     curs = conn.cursor()
@@ -114,11 +143,14 @@ def initialize_database():
         # Try reading all deliverables, if they exist
         # If they don't exist, they will just default to empty string
         for j in range(len(deliverable_fnames)):
-            if (os.path.isfile(f"../{s}/{deliverable_fnames[j]}")):
-                with open(f"../{s}/{deliverable_fnames[j]}", "r") as f:
-                    deliverables_dict[deliverable_colnames[j]] = f.read()
-            else:
-                print(f">>> Submission {submission_id} does not have the file {deliverable_fnames[j]}. Skipping...")
+            try:
+                if (os.path.isfile(f"../{s}/{deliverable_fnames[j]}")):
+                    with open(f"../{s}/{deliverable_fnames[j]}", "r") as f:
+                        deliverables_dict[deliverable_colnames[j]] = f.read()
+                else:
+                    print(f">>> Submission {submission_id} does not have the file {deliverable_fnames[j]}. Skipping...")
+            except:
+                print(f">>> Could not read file ../{s}/{deliverable_fnames[j]}. Skipping...")
 
         # Add stuff to db
         last_timestamp = submissions[s][":created_at"].strftime("%Y-%m-%d %H:%M:%S")    # yml autoconverts to datetime, so strftime is needed
@@ -128,6 +160,7 @@ def initialize_database():
             first_timestamp = submissions[s][":history"][0][":created_at"].strftime("%Y-%m-%d %H:%M:%S")
         else:
             first_timestamp = last_timestamp
+        submission_deltas = make_submission_deltas(submissions[s])
 
         inserted_values = (submission_id,) + \
                         tuple(deliverables_dict[cn] for cn in deliverable_colnames) + \
@@ -137,7 +170,8 @@ def initialize_database():
                          first_timestamp,
                          last_timestamp,
                          submissions[s][":score"],
-                         attempt_count)
+                         attempt_count,
+                         submission_deltas)
         question_marks = ",".join(['?' for _ in range(len(inserted_values))])
         curs.execute(f'''INSERT INTO submissions({", ".join(table_colnames)}) VALUES ({question_marks})''', inserted_values)
 

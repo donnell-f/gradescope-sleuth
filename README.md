@@ -78,7 +78,7 @@ Commands (from help message):
             UINs.
 
 
-    print {-uin} {-file} [-nonums]
+    print file {-uin} {-file} [-nonums]
         Print the entirety of a deliverable file that a student submitted
         with syntax coloring and line numbers.
     Arguments:
@@ -88,6 +88,19 @@ Commands (from help message):
             The desired student's UIN.
         -nonums
             Don't print line numbers.
+    
+
+    print history {-uin | -email}
+        Print the student's submission history in terms of points earned
+        per unit time.
+    Arguments:
+        -uin <uin>
+            The desired student's UIN.
+        -email <email> 
+            The desired student's email.
+        -horiz
+            Print history horizontally (i.e. in one line). Makes it easier to
+            copy and paste.
 
 
     exit, quit, q

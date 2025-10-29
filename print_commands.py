@@ -11,7 +11,7 @@ from pygments import highlight
 
 from .argument_parsing import ArgumentParser, ParsedArguments
 
-def print_student(colname_fname_dict, parsed_args: ParsedArguments):
+def print_file(colname_fname_dict, parsed_args: ParsedArguments):
     ### NOTE: this code needs major refactoring if -email is added.
     #         Right now, the only id argument is -uin.
     uin = parsed_args.get_argument('-uin')
@@ -21,7 +21,7 @@ def print_student(colname_fname_dict, parsed_args: ParsedArguments):
     if (uin == False):
         raise NameError("Please provide at least one form of identification (only -uin supported right now).")
     else:
-        uin = uin[0]
+        uin = int(uin[0])
     if (file_name == False):
         raise NameError("Please profile a deliverable file name with -file")
     else:
@@ -63,6 +63,53 @@ def print_student(colname_fname_dict, parsed_args: ParsedArguments):
     print("\n".join(output_code))
 
 
+
+def print_history(colname_fname_dict, parsed_args: ParsedArguments):
+    uin = parsed_args.get_argument('-uin')
+    email = parsed_args.get_argument('-email')
+    horiz = parsed_args.get_argument('-horiz')
+
+    if (uin == False and email == False):
+        raise NameError("You must provide a UIN or email to identify a student.")
+    elif (uin == True and email == True):
+        raise NameError("Identify student by either -email or -uin but not both.")
+    else:
+        if (uin != False):
+            uin = int(uin[0])
+        elif (email != False):
+            email = email[0].strip()
+
+    conn = sqlite3.connect("submissions_db.db")
+    curs = conn.cursor()
+
+    if (email != False):
+        curs.execute("SELECT submission_deltas FROM submissions WHERE email = ?", (email,))
+        res = curs.fetchall()
+        if (len(res) > 1):
+            raise ValueError("`print history` found two students with the same uin???")
+        if (len(res[0]) > 1):
+            raise ValueError("Wrong query in `print history`.")
+        hist = res[0][0]
+
+        if (not horiz):
+            print( "\n         |\n         v\n".join(hist.split(' -> ')) )
+        else:
+            print(hist)
+    elif (uin != False):
+        curs.execute("SELECT submission_deltas FROM submissions WHERE uin = ?", (uin,))
+        res = curs.fetchall()
+        if (len(res) > 1):
+            raise ValueError("`print history` found two students with the same uin???")
+        if (len(res[0]) > 1):
+            raise ValueError("Wrong query in `print history`.")
+        hist = res[0][0]
+
+        if (not horiz):
+            print( "\n         |\n         v\n".join(hist.split(' -> ')) )
+        else:
+            print(hist)
+    
+    
 
 
 
