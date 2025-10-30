@@ -93,15 +93,12 @@ Commands:
 
     print history {-uin | -email}
         Print the student's submission history in terms of points earned
-        per unit time.
+        and lines changed per unit time.
     Arguments:
         -uin <uin>
             The desired student's UIN.
         -email <email> 
             The desired student's email.
-        -horiz
-            Print history horizontally (i.e. in one line). Makes it easier to
-            copy and paste.
 
 
     exit, quit, q

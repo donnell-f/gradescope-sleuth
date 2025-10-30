@@ -92,24 +92,40 @@ Commands (from help message):
 
     print history {-uin | -email}
         Print the student's submission history in terms of points earned
-        per unit time.
+        and lines changed per unit time.
     Arguments:
         -uin <uin>
             The desired student's UIN.
         -email <email> 
             The desired student's email.
-        -horiz
-            Print history horizontally (i.e. in one line). Makes it easier to
-            copy and paste.
 
 
     exit, quit, q
         Exits the program.
 
 
+
+# Usage Notes
+
 Usage notes:
 - Only put one dash for arguments. The argument parser is not sophisticated enough to handle --args.
 - Don't put quotes around arguments.
 
+
+# How to Get Cookies for Network Settings
+
+In order to access historical submissions, Gradescope Sleuth needs access to a valid Gradescope account. In order to circumvent issues with 2FA and institutional Gradescope accounts, Gradescope Sleuth stores a local copy of your session tokens (aka. session cookies) in config.json for authentication. Is this the most secure solution? No. But it gets the job done. Additionally, Gradescope Sleuth needs to know the course ID and assignment ID corresponding to the assignment you loaded in.
+
+This section will explain how to copy your session tokens and other login info into Gradescope Sleuth.
+
+Your session cookies should be visible in the browser whenever you visit Gradescope. One of the cookies is called "remember_me", the other is called "signed_token". Refer to the following screenshot for their location:
+
+https://drive.google.com/file/d/1kD1zQo-xqvxvnQkpDGuX4YtwruW2HBqx/view?usp=sharing
+
+After this, you will need to give Gradescope Sleuth a link to the "Review Grades" page for the assignment you loaded into Gradescope Sleuth (or really, any page that corresponds to that specific assignment).
+
+https://drive.google.com/file/d/1UiDdOiiPv-NNP0QkgBSjzoI04qzthnjm/view?usp=sharing
+
+After this, you should be done. Contact me if you have any problems.
 
 
