@@ -9,8 +9,23 @@ from tabulate import tabulate
 # Returns the counts of lines added, removed, and changed.
 # This function was written by AI, but I reviewed it and it looks good to me.
 def check_diffs(old, new, ignore_blank=True, ignore_ws=True):
-    a = old
-    b = new
+    def to_lines(blob):
+        if blob is None:
+            return []
+        if isinstance(blob, str):
+            return blob.splitlines()
+        if isinstance(blob, bytes):
+            return blob.decode(errors="replace").splitlines()
+        coerced = []
+        for ln in blob:
+            if isinstance(ln, bytes):
+                coerced.append(ln.decode(errors="replace"))
+            else:
+                coerced.append(str(ln))
+        return coerced
+
+    a = to_lines(old)
+    b = to_lines(new)
 
     def norm(line):
         if ignore_ws:
@@ -45,5 +60,3 @@ def check_diffs(old, new, ignore_blank=True, ignore_ws=True):
                 removed += (len_a - len_b) # surplus deletions
 
     return {"added": added, "removed": removed, "changed": changed}
-
-

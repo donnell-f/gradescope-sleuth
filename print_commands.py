@@ -69,6 +69,8 @@ def print_file(colname_fname_dict, parsed_args: ParsedArguments):
 
 
 def print_history(colname_fname_dict, parsed_args: ParsedArguments):
+    # fname_colname_dict = {colname_fname_dict[k]: k for k in colname_fname_dict}
+
     uin = parsed_args.get_argument('-uin')
     email = parsed_args.get_argument('-email')
 
@@ -115,16 +117,26 @@ def print_history(colname_fname_dict, parsed_args: ParsedArguments):
     print(f"Created: {sub_hist[0]['created_at']}. Delta: +{time_delta_str}.")
     print(f"Score: {round(sub_hist[0]['score'], 2)} pts.")
     files_submitted = [d for d in sub_hist[0]['deliverables'] if sub_hist[0]['deliverables'][d] != ""]
+    print("Files submitted:")
+    for fs in files_submitted:
+        print(f"    - {colname_fname_dict[fs]}")
     print()
 
     # Print the actual diffs
     for shi in range(1, len(sub_hist)):
-        time_delta_str = f"{sub_hist[shi]['time_delta'] / 3600} hrs" if sub_hist[shi]['time_delta'] / 3600 >= 1 else f"{round(sub_hist[shi]['time_delta'] / 60)} mins"
+        time_delta_str = f"{round(sub_hist[shi]['time_delta'] / 3600, 2)} hrs" if sub_hist[shi]['time_delta'] / 3600 >= 1 else f"{round(sub_hist[shi]['time_delta'] / 60)} mins"
         print(f"Submission {shi+1}")
         print(f"Created: {sub_hist[shi]['created_at']}. Delta: +{time_delta_str}.")
         print(f"Score: {round(sub_hist[shi]['score'], 2)} pts.")
         for cn in colname_fname_dict:
             print(f"{colname_fname_dict[cn]}:")
+
+            ### DEBUG
+            # if (shi + 1 == 6 and cn == 'lms_utilities_cpp'):
+            #     print(sub_hist[shi-1]['deliverables'][cn])
+            #     print('-------------------------------------------------------------------------------------------------------------------------')
+            #     print(sub_hist[shi]['deliverables'][cn])
+
             diff_dict = check_diffs(sub_hist[shi-1]['deliverables'][cn], sub_hist[shi]['deliverables'][cn])
             print(f"    - Added {diff_dict['added']} lines.")
             print(f"    - Removed {diff_dict['removed']} lines.")
