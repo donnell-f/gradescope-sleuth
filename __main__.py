@@ -20,6 +20,16 @@ try:
 except:
     print("The `tabulate` package is missing. Please run `pip install tabulate`.")
     MISSING_PACKAGES = True
+try:
+    import selenium
+except:
+    print("The `selenium` package is missing. Please run `pip install selenium`.")
+    MISSING_PACKAGES = True
+try:
+    import webdriver_manager
+except:
+    print("The `webdriver_manager` package is missing. Please run `pip install webdriver_manager`.")
+    MISSING_PACKAGES = True
 
 if (MISSING_PACKAGES):
     exit()

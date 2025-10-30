@@ -33,34 +33,36 @@ def detect_deliverables(submissions: dict) -> list[str]:
 
     return list(all_cpp_submitted.keys())
 
-def make_submission_deltas(submission_dict: dict):
-    submission_path = [(h[":created_at"], h[":score"]) for h in submission_dict[":history"]]
-    submission_path.append( (submission_dict[":created_at"], submission_dict[":score"]) )
+def make_submission_history(submission_dict: dict, final_sub_id: int):
+    submission_path = [(
+            h[":created_at"],
+            float(h[":score"]),
+            int(h[":id"])
+        ) for h in submission_dict[":history"]]
+    submission_path.append( (submission_dict[":created_at"], submission_dict[":score"], final_sub_id) )
 
-    submission_deltas = []
+    submission_history = []
     for spi in range(len(submission_path)):
         if (spi != 0):
-            submission_deltas.append(
-                (
-                    (submission_path[spi][0] - submission_path[spi - 1][0]).total_seconds(),
-                    round(submission_path[spi][1], 2)
-                )
+            submission_history.append(
+                {
+                    'created_at': submission_path[spi][0].strftime("%Y-%m-%d %H:%M:%S"),
+                    'time_delta': (submission_path[spi][0] - submission_path[spi - 1][0]).total_seconds(),
+                    'score': round(submission_path[spi][1], 2),
+                    'submission_id': submission_path[spi][2]
+                }
             )
         else:
-            submission_deltas.append( (0.0, round(submission_path[spi][1], 2)) )
+            submission_history.append(
+                {
+                    'created_at': submission_path[spi][0].strftime("%Y-%m-%d %H:%M:%S"),
+                    'time_delta': 0.0,
+                    'score': round(submission_path[spi][1], 2),
+                    'submission_id': submission_path[spi][2]
+                }
+            )
 
-    # submission_deltas = [f"({sd[0]} hrs, {sd[1]} pts)" for sd in submission_deltas]
-    for sdi in range(len(submission_deltas)):
-        if (sdi == 0):
-            submission_deltas[sdi] = f"(initial, {submission_deltas[sdi][1]} pts)"
-        elif (submission_deltas[sdi][0] / 3600 < 1):
-            submission_deltas[sdi] = f"(+{round(submission_deltas[sdi][0] / 60)} mins, {submission_deltas[sdi][1]} pts)"
-        else:
-            submission_deltas[sdi] = f"(+{round(submission_deltas[sdi][0] / 3600, 1)} hrs, {submission_deltas[sdi][1]} pts)"
-
-    submission_deltas_str = " -> ".join(submission_deltas)
-
-    return submission_deltas_str
+    return json.dumps(submission_history)
 
 
 def initialize_database():
@@ -122,8 +124,8 @@ def initialize_database():
     deliverable_colnames = [d.lower().replace(".", "_") for d in deliverable_fnames]
     deliverable_cols = [d + " TEXT" for d in deliverable_colnames]
 
-    table_colnames = ["submission_id"] + deliverable_colnames + ["student_name", "uin", "email", "first_timestamp", "last_timestamp", "final_score", "attempt_count", "submission_deltas"]
-    table_columns = ["submission_id INTEGER PRIMARY KEY"] + deliverable_cols + ["student_name TEXT NOT NULL", "uin INTEGER NOT NULL", "email TEXT", "first_timestamp TEXT", "last_timestamp TEXT", "final_score REAL", "attempt_count INTEGER", "submission_deltas TEXT"]
+    table_colnames = ["submission_id"] + deliverable_colnames + ["student_name", "uin", "email", "first_timestamp", "last_timestamp", "final_score", "attempt_count", "submission_history"]
+    table_columns = ["submission_id INTEGER PRIMARY KEY"] + deliverable_cols + ["student_name TEXT NOT NULL", "uin INTEGER NOT NULL", "email TEXT", "first_timestamp TEXT", "last_timestamp TEXT", "final_score REAL", "attempt_count INTEGER", "submission_history TEXT"]
 
     conn = sqlite3.connect("submissions_db.db")
     curs = conn.cursor()
@@ -160,7 +162,7 @@ def initialize_database():
             first_timestamp = submissions[s][":history"][0][":created_at"].strftime("%Y-%m-%d %H:%M:%S")
         else:
             first_timestamp = last_timestamp
-        submission_deltas = make_submission_deltas(submissions[s])
+        submission_history = make_submission_history(submissions[s], int(s[s.index('_') + 1: ]))
 
         inserted_values = (submission_id,) + \
                         tuple(deliverables_dict[cn] for cn in deliverable_colnames) + \
@@ -171,7 +173,7 @@ def initialize_database():
                          last_timestamp,
                          submissions[s][":score"],
                          attempt_count,
-                         submission_deltas)
+                         submission_history)
         question_marks = ",".join(['?' for _ in range(len(inserted_values))])
         curs.execute(f'''INSERT INTO submissions({", ".join(table_colnames)}) VALUES ({question_marks})''', inserted_values)
 

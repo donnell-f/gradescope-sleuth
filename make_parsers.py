@@ -42,7 +42,6 @@ def make_parsers():
     print_history_parser = ArgumentParser('print history')
     print_history_parser.add_argument('-uin', 1)
     print_history_parser.add_argument('-email', 1)
-    print_history_parser.add_argument('-horiz', 0)
 
     return {
         'regex all': regex_all_parser,

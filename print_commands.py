@@ -4,12 +4,16 @@ import platform
 from datetime import datetime, timedelta
 import re
 import functools
+import json
 from tabulate import tabulate
 from pygments.lexers import CppLexer
 from pygments.formatters import TerminalFormatter
 from pygments import highlight
 
 from .argument_parsing import ArgumentParser, ParsedArguments
+from .check_network_settings import check_network_settings, read_config
+from .diff_checking import check_diffs
+from .print_helpers import download_deliverables
 
 def print_file(colname_fname_dict, parsed_args: ParsedArguments):
     ### NOTE: this code needs major refactoring if -email is added.
@@ -67,7 +71,6 @@ def print_file(colname_fname_dict, parsed_args: ParsedArguments):
 def print_history(colname_fname_dict, parsed_args: ParsedArguments):
     uin = parsed_args.get_argument('-uin')
     email = parsed_args.get_argument('-email')
-    horiz = parsed_args.get_argument('-horiz')
 
     if (uin == False and email == False):
         raise NameError("You must provide a UIN or email to identify a student.")
@@ -83,31 +86,54 @@ def print_history(colname_fname_dict, parsed_args: ParsedArguments):
     curs = conn.cursor()
 
     if (email != False):
-        curs.execute("SELECT submission_deltas FROM submissions WHERE email = ?", (email,))
-        res = curs.fetchall()
-        if (len(res) > 1):
-            raise ValueError("`print history` found two students with the same uin???")
-        if (len(res[0]) > 1):
-            raise ValueError("Wrong query in `print history`.")
-        hist = res[0][0]
-
-        if (not horiz):
-            print( "\n         |\n         v\n".join(hist.split(' -> ')) )
-        else:
-            print(hist)
+        curs.execute("SELECT submission_history, student_name, uin FROM submissions WHERE email = ?", (email,))
     elif (uin != False):
-        curs.execute("SELECT submission_deltas FROM submissions WHERE uin = ?", (uin,))
-        res = curs.fetchall()
-        if (len(res) > 1):
-            raise ValueError("`print history` found two students with the same uin???")
-        if (len(res[0]) > 1):
-            raise ValueError("Wrong query in `print history`.")
-        hist = res[0][0]
+        curs.execute("SELECT submission_history, student_name, uin FROM submissions WHERE uin = ?", (uin,))
+    res = curs.fetchall()
+    if (len(res) > 1):
+        raise ValueError("`print history` found two students with the same uin???")
+    if (len(res[0]) > 3):
+        raise ValueError("Wrong query in `print history`.")
+    name_uin = f"{res[0][1]} ({res[0][2]})"
+    sub_hist = json.loads(res[0][0])
 
-        if (not horiz):
-            print( "\n         |\n         v\n".join(hist.split(' -> ')) )
-        else:
-            print(hist)
+    # Make sure all the network nettings are functional
+    check_network_settings()
+
+    config_dict = read_config()
+
+    # Load all the files for the submissions
+    for shi in range(len(sub_hist)):
+        print(f"Downloading {shi+1}/{len(sub_hist)} historical submissions for {name_uin}.")
+        sub_hist[shi]['deliverables'] = download_deliverables(colname_fname_dict, config_dict, sub_hist[shi])
+    
+    print()
+    print(f"Submission history for {name_uin}")
+    print()
+    
+    # Print initial submission "diff"
+    time_delta_str = f"{round(sub_hist[0]['time_delta'] / 3600, 2)} hrs" if sub_hist[0]['time_delta'] / 3600 >= 1 else f"{round(sub_hist[0]['time_delta'] / 60)} mins"
+    print("Submission 1")
+    print(f"Created: {sub_hist[0]['created_at']}. Delta: +{time_delta_str}.")
+
+    # Print the actual diffs
+    for shi in range(1, len(sub_hist)):
+        time_delta_str = f"{sub_hist[shi]['time_delta'] / 3600} hrs" if sub_hist[shi]['time_delta'] / 3600 >= 1 else f"{round(sub_hist[shi]['time_delta'] / 60)} mins"
+        print(f"Submission {shi+1}")
+        print(f"Created: {sub_hist[shi]['created_at']}. Delta: +{time_delta_str}.")
+        for cn in colname_fname_dict:
+            print(f"{colname_fname_dict[cn]}:")
+            diff_dict = check_diffs(sub_hist[shi-1]['deliverables'][cn], sub_hist[shi]['deliverables'][cn])
+            print(f"    - Added {diff_dict['added']} lines.")
+            print(f"    - Removed {diff_dict['removed']} lines.")
+            print(f"    - Changed {diff_dict['changed']} lines.")
+        print()
+
+
+
+
+
+    
     
     
 
