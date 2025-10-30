@@ -2,7 +2,17 @@
 
 Welcome to Gradescope Sleuth! This tool was designed to make it easier to look for plagiarized and AI-generated code in Gradescope submissions. Below are a list of commands the program supports.
 
-Commands (from help message):
+# Quick Start Guide
+How to use Gradescope Sleuth:
+1. Download submissions for a Gradescope coding assignment.
+2. Run `git clone https://github.com/donnell-f/gradescope-sleuth` in the "<assignment_name>-submissions" folder that you downloaded.
+3. In that same folder, run Gradescope Sleuth with the command `python -m gradescope-sleuth`.
+
+If you want to reset Gradescope Sleuth (i.e. run the setup again), then delete the config.json file in the `gradescope-sleuth` folder.
+
+# Commands
+
+    (From help message)
 
     regex all [-v] [-f] [-case] [-simple] [-outf] <expression>
         By default, prints a list of all students with code submissions that
