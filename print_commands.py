@@ -113,7 +113,7 @@ def print_history(colname_fname_dict, parsed_args: ParsedArguments):
     
     # Print initial submission "diff"
     time_delta_str = f"{round(sub_hist[0]['time_delta'] / 3600, 2)} hrs" if sub_hist[0]['time_delta'] / 3600 >= 1 else f"{round(sub_hist[0]['time_delta'] / 60)} mins"
-    print("Submission 1")
+    print(f"\033]8;;{sub_hist[0]['link']}\033\\{"Submission 1"}\033]8;;\033\\")
     print(f"Created: {sub_hist[0]['created_at']}. Delta: +{time_delta_str}.")
     print(f"Score: {round(sub_hist[0]['score'], 2)} pts.")
     files_submitted = [d for d in sub_hist[0]['deliverables'] if sub_hist[0]['deliverables'][d] != ""]
@@ -125,7 +125,7 @@ def print_history(colname_fname_dict, parsed_args: ParsedArguments):
     # Print the actual diffs
     for shi in range(1, len(sub_hist)):
         time_delta_str = f"{round(sub_hist[shi]['time_delta'] / 3600, 2)} hrs" if sub_hist[shi]['time_delta'] / 3600 >= 1 else f"{round(sub_hist[shi]['time_delta'] / 60)} mins"
-        print(f"Submission {shi+1}")
+        print(f"\033]8;;{sub_hist[shi]['link']}\033\\{f"Submission {shi+1}"}\033]8;;\033\\")
         print(f"Created: {sub_hist[shi]['created_at']}. Delta: +{time_delta_str}.")
         print(f"Score: {round(sub_hist[shi]['score'], 2)} pts.")
         for cn in colname_fname_dict:

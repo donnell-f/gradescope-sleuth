@@ -41,13 +41,21 @@ def download_one_set(sub_info, colname_fname_dict, config_dict, name_uin, driver
 
     deliv_dict = {k: "" for k in colname_fname_dict}
     for d in download_urls:
+        # print(d.get('href'))
         match = re.search(r'https:\/\/production-gradescope-uploads.+?amazonaws.com\/uploads\/text_file\/file\/\d+\/(.+(\.cpp|\.h))\?.+?', d.get('href'))
-        deliv_name = match.group(1).strip()
+
+        deliv_name = None
+        try:
+            deliv_name = match.group(1).strip()
+        except:
+            print("Non-C++ file detected. Skipping...")
+            continue
+
         if (deliv_name in fname_colname_dict.keys()):
             deliv_content = requests.get(d.get('href')).text
             deliv_dict[fname_colname_dict[deliv_name]] = deliv_content
 
-    return deliv_dict
+    return (deliv_dict, link)
 
 
 # Downloads deliverables, modifying sub_hist
@@ -85,7 +93,9 @@ def download_deliverables(sub_hist, colname_fname_dict, config_dict, name_uin):
 
     for shi in range(len(sub_hist)):
         print(f"Downloading {shi+1}/{len(sub_hist)} historical submissions for {name_uin}.")
-        sub_hist[shi]['deliverables'] = download_one_set(sub_hist[shi], colname_fname_dict, config_dict, name_uin, driver)
+        download_results = download_one_set(sub_hist[shi], colname_fname_dict, config_dict, name_uin, driver)
+        sub_hist[shi]['deliverables'] = download_results[0]
+        sub_hist[shi]['link'] = download_results[1]
 
     
 
