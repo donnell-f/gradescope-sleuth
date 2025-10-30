@@ -30,6 +30,11 @@ try:
 except:
     print("The `webdriver_manager` package is missing. Please run `pip install webdriver_manager`.")
     MISSING_PACKAGES = True
+try:
+    import bs4
+except:
+    print("The `beautifulsoup4` package is missing. Please run `pip install beautifulsoup4`.")
+    MISSING_PACKAGES = True
 
 if (MISSING_PACKAGES):
     exit()

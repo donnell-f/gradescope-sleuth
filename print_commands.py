@@ -102,10 +102,8 @@ def print_history(colname_fname_dict, parsed_args: ParsedArguments):
 
     config_dict = read_config()
 
-    # Load all the files for the submissions
-    for shi in range(len(sub_hist)):
-        print(f"Downloading {shi+1}/{len(sub_hist)} historical submissions for {name_uin}.")
-        sub_hist[shi]['deliverables'] = download_deliverables(colname_fname_dict, config_dict, sub_hist[shi])
+    # Downloads all deliverables, modifying sub_hist
+    download_deliverables(sub_hist, colname_fname_dict, config_dict, name_uin)
     
     print()
     print(f"Submission history for {name_uin}")
@@ -115,12 +113,16 @@ def print_history(colname_fname_dict, parsed_args: ParsedArguments):
     time_delta_str = f"{round(sub_hist[0]['time_delta'] / 3600, 2)} hrs" if sub_hist[0]['time_delta'] / 3600 >= 1 else f"{round(sub_hist[0]['time_delta'] / 60)} mins"
     print("Submission 1")
     print(f"Created: {sub_hist[0]['created_at']}. Delta: +{time_delta_str}.")
+    print(f"Score: {round(sub_hist[0]['score'], 2)} pts.")
+    files_submitted = [d for d in sub_hist[0]['deliverables'] if sub_hist[0]['deliverables'][d] != ""]
+    print()
 
     # Print the actual diffs
     for shi in range(1, len(sub_hist)):
         time_delta_str = f"{sub_hist[shi]['time_delta'] / 3600} hrs" if sub_hist[shi]['time_delta'] / 3600 >= 1 else f"{round(sub_hist[shi]['time_delta'] / 60)} mins"
         print(f"Submission {shi+1}")
         print(f"Created: {sub_hist[shi]['created_at']}. Delta: +{time_delta_str}.")
+        print(f"Score: {round(sub_hist[shi]['score'], 2)} pts.")
         for cn in colname_fname_dict:
             print(f"{colname_fname_dict[cn]}:")
             diff_dict = check_diffs(sub_hist[shi-1]['deliverables'][cn], sub_hist[shi]['deliverables'][cn])
