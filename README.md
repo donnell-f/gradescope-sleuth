@@ -109,7 +109,7 @@ Commands (from help message):
 
 Usage notes:
 - Only put one dash for arguments. The argument parser is not sophisticated enough to handle --args.
-- Don't put quotes around arguments.
+- Don't put quotes around argument params.
 
 
 # How to Get Cookies for Network Settings
