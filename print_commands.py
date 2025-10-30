@@ -130,13 +130,6 @@ def print_history(colname_fname_dict, parsed_args: ParsedArguments):
         print(f"Score: {round(sub_hist[shi]['score'], 2)} pts.")
         for cn in colname_fname_dict:
             print(f"{colname_fname_dict[cn]}:")
-
-            ### DEBUG
-            # if (shi + 1 == 6 and cn == 'lms_utilities_cpp'):
-            #     print(sub_hist[shi-1]['deliverables'][cn])
-            #     print('-------------------------------------------------------------------------------------------------------------------------')
-            #     print(sub_hist[shi]['deliverables'][cn])
-
             diff_dict = check_diffs(sub_hist[shi-1]['deliverables'][cn], sub_hist[shi]['deliverables'][cn])
             print(f"    - Added {diff_dict['added']} lines.")
             print(f"    - Removed {diff_dict['removed']} lines.")
