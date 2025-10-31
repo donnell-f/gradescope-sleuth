@@ -74,7 +74,7 @@ def get_in_context_matches(pattern: str, file: str, student_name: str, uin: str,
 # Added LRU cache for speed
 @functools.lru_cache(maxsize=256)
 def _compile_cinsensitive(pat):
-    return re.compile(pat, re.IGNORECASE)
+    return re.compile(pat, flags=re.IGNORECASE)
 @functools.lru_cache(maxsize=256)
 def _compile_csensitive(pat):
     return re.compile(pat)
